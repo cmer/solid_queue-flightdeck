@@ -16,14 +16,14 @@ module Flightdeck
       SolidQueue::Queue.new(@queue_name).pause
       reload_stats
       toast "Paused #{@queue_name}. Workers will stop picking up its jobs."
-      respond_with_toast "flightdeck/queues/update", fallback: queues_path
+      respond_with_toast queues_frame, fallback: queues_path
     end
 
     def resume
       SolidQueue::Queue.new(@queue_name).resume
       reload_stats
       toast "Resumed #{@queue_name}."
-      respond_with_toast "flightdeck/queues/update", fallback: queues_path
+      respond_with_toast queues_frame, fallback: queues_path
     end
 
     private
@@ -36,6 +36,11 @@ module Flightdeck
         Flightdeck::Cache.bypass { load_stats }
       end
 
+      def queues_frame
+        { id: "fd-queues", url: queues_path,
+          partial: "flightdeck/queues/cards", locals: { stats: @stats, sparklines: @sparklines } }
+      end
+
       # Only queues Flightdeck is actually showing can be paused. That keeps an
       # arbitrary parameter from creating pause rows for queues that do not
       # exist.
@@ -45,7 +50,7 @@ module Flightdeck
         return if @stats.find(@queue_name)
 
         toast "Unknown queue #{@queue_name.presence || "(blank)"}.", level: :error
-        respond_with_toast "flightdeck/queues/update", fallback: queues_path
+        respond_with_toast queues_frame, fallback: queues_path
       end
   end
 end

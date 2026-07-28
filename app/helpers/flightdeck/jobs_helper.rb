@@ -114,12 +114,6 @@ module Flightdeck
       text.to_s
     end
 
-    # URL the refreshed frame should poll after an action, rebuilt from the
-    # filters the action carried rather than from the POST's own path.
-    def fd_refreshed_list_url
-      jobs_path(list_filters.merge(state: @refreshed_state == :all ? nil : @refreshed_state).compact)
-    end
-
     def fd_toast_level_class(level)
       level.to_sym == :error ? "fd-toast error" : "fd-toast"
     end

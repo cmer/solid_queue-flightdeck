@@ -1,9 +1,5 @@
 <% content_for :page_title, "Processes" %>
 
-<turbo-frame id="fd-processes"
-             target="_top"
-             data-controller="refresh"
-             data-refresh-interval-value="<%= (Flightdeck.config.poll_interval.to_f * 1000).round %>"
-             data-refresh-url-value="<%= processes_path %>">
+<%= fd_refresh_frame "fd-processes", url: processes_path do %>
   <%= render "flightdeck/processes/fleet", registry: @registry %>
-</turbo-frame>
+<% end %>

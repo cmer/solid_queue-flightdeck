@@ -1,9 +1,5 @@
 <% content_for :page_title, "Queues" %>
 
-<turbo-frame id="fd-queues"
-             target="_top"
-             data-controller="refresh"
-             data-refresh-interval-value="<%= (Flightdeck.config.poll_interval.to_f * 1000).round %>"
-             data-refresh-url-value="<%= queues_path %>">
+<%= fd_refresh_frame "fd-queues", url: queues_path do %>
   <%= render "flightdeck/queues/cards", stats: @stats, sparklines: @sparklines %>
-</turbo-frame>
+<% end %>

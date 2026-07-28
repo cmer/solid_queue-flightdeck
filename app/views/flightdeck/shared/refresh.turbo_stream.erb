@@ -1,0 +1,14 @@
+<turbo-stream action="append" target="fd-toasts">
+  <template><%= render partial: "flightdeck/shared/toast", formats: [ :html ], locals: { toast: @toast } %></template>
+</turbo-stream>
+
+<%# Re-render the frame the action was launched from, so the same round trip
+    that carries the toast also carries settled rows and counts. A page that
+    does not have the frame (the job detail page, say) simply ignores this. %>
+<turbo-stream action="replace" target="<%= @frame[:id] %>">
+  <template>
+    <%= fd_refresh_frame @frame[:id], url: @frame[:url], target: @frame.fetch(:target, "_top") do %>
+      <%= render partial: @frame[:partial], formats: [ :html ], locals: @frame[:locals] %>
+    <% end %>
+  </template>
+</turbo-stream>

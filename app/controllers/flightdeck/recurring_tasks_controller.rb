@@ -26,12 +26,17 @@ module Flightdeck
               "class refused to enqueue.", level: :error
       end
 
-      respond_with_toast "flightdeck/recurring_tasks/run", fallback: recurring_tasks_path
+      respond_with_toast recurring_frame, fallback: recurring_tasks_path
     end
 
     private
       def load_catalog
         @catalog = RecurringCatalog.new
+      end
+
+      def recurring_frame
+        { id: "fd-recurring", url: recurring_tasks_path,
+          partial: "flightdeck/recurring_tasks/table", locals: { catalog: @catalog } }
       end
 
       def job_reference
@@ -40,7 +45,7 @@ module Flightdeck
 
       def missing
         toast "That recurring task no longer exists.", level: :error
-        respond_with_toast "flightdeck/recurring_tasks/run", fallback: recurring_tasks_path
+        respond_with_toast recurring_frame, fallback: recurring_tasks_path
       end
   end
 end

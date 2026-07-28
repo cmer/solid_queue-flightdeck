@@ -35,7 +35,6 @@ module Flightdeck
           execution.discard
         end
 
-        def verb = "discard"
         def past_tense = "discarded"
         def blocked_reason = "discardable"
         def default_state = discard_state

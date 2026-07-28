@@ -2,6 +2,23 @@
 
 module Flightdeck
   module ApplicationHelper
+    # The polling <turbo-frame> every panel lives in: the refresh Stimulus
+    # controller, its interval, and the URL the frame re-requests. One owner for
+    # the markup, so the index views and the turbo-stream replacements can never
+    # drift apart.
+    #
+    # `target:` defaults to "_top" because most frames are lists whose links
+    # leave the frame; the jobs list opts out (`target: nil`) so its pager can
+    # navigate in place.
+    def fd_refresh_frame(id, url:, interval: fd_poll_ms, target: "_top", **options, &block)
+      tag.turbo_frame(
+        id: id,
+        target: target,
+        data: { controller: "refresh", refresh_interval_value: interval, refresh_url_value: url },
+        **options, &block
+      )
+    end
+
     # Path to a built asset, resolved through the committed manifest. Returns
     # nil when assets have not been built yet (fresh checkout / dev), so the
     # layout can simply omit the tag instead of blowing up.

@@ -19,7 +19,7 @@ module Flightdeck
       unless node.prunable?
         toast "#{node.kind} #{node.name} is still sending heartbeats — only unresponsive " \
               "processes can be pruned.", level: :error
-        return respond_with_toast("flightdeck/processes/prune", fallback: processes_path)
+        return respond_with_toast(processes_frame, fallback: processes_path)
       end
 
       claimed = node.claimed_count
@@ -27,12 +27,17 @@ module Flightdeck
       load_registry
 
       toast "Pruned #{node.kind} #{node.name}#{released(claimed)}."
-      respond_with_toast "flightdeck/processes/prune", fallback: processes_path
+      respond_with_toast processes_frame, fallback: processes_path
     end
 
     private
       def load_registry
         @registry = ProcessRegistry.new
+      end
+
+      def processes_frame
+        { id: "fd-processes", url: processes_path,
+          partial: "flightdeck/processes/fleet", locals: { registry: @registry } }
       end
 
       def released(claimed)
@@ -43,7 +48,7 @@ module Flightdeck
 
       def missing
         toast "That process is no longer registered.", level: :error
-        respond_with_toast "flightdeck/processes/prune", fallback: processes_path
+        respond_with_toast processes_frame, fallback: processes_path
       end
   end
 end

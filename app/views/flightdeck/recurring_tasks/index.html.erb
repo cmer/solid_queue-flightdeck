@@ -1,9 +1,5 @@
 <% content_for :page_title, "Recurring tasks" %>
 
-<turbo-frame id="fd-recurring"
-             target="_top"
-             data-controller="refresh"
-             data-refresh-interval-value="<%= (Flightdeck.config.poll_interval.to_f * 1000).round %>"
-             data-refresh-url-value="<%= recurring_tasks_path %>">
+<%= fd_refresh_frame "fd-recurring", url: recurring_tasks_path do %>
   <%= render "flightdeck/recurring_tasks/table", catalog: @catalog %>
-</turbo-frame>
+<% end %>

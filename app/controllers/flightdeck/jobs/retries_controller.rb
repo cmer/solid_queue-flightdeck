@@ -15,7 +15,6 @@ module Flightdeck
           execution.retry
         end
 
-        def verb = "retry"
         def past_tense = "retried"
         def blocked_reason = "failed"
     end

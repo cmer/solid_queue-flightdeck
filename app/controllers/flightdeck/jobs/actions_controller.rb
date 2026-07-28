@@ -11,17 +11,24 @@ module Flightdeck
     #   * selected jobs    POST /jobs/retry   with job_ids[]
     #   * all matching     POST /jobs/retry   with scope=all + the list filters
     class ActionsController < Flightdeck::ApplicationController
-      def create
-        result =
-          if params[:id].present?
-            act_on_single
-          elsif params[:scope] == "all"
-            act_on_all_matching
-          else
-            act_on_selected
-          end
+      include Toasts
 
-        respond_with(result)
+      def create
+        if params[:id].present?
+          act_on_single
+        elsif params[:scope] == "all"
+          act_on_all_matching
+        else
+          act_on_selected
+        end
+
+        respond_to do |format|
+          format.turbo_stream do
+            build_refreshed_list
+            render_refresh_stream(refreshed_frame)
+          end
+          format.any { redirect_with_toast_flash(list_url) }
+        end
       end
 
       private
@@ -37,7 +44,6 @@ module Flightdeck
           raise NotImplementedError
         end
 
-        def verb = raise(NotImplementedError)
         def past_tense = raise(NotImplementedError)
 
         # --- scopes -----------------------------------------------------------
@@ -48,12 +54,12 @@ module Flightdeck
 
         def act_on_single
           execution = find_single(params[:id])
-          return failure("That job is no longer #{blocked_reason}.") unless execution
+          return toast("That job is no longer #{blocked_reason}.", level: :error) unless execution
 
           apply(execution)
-          success("#{past_tense.capitalize} job ##{params[:id]}.")
+          toast "#{past_tense.capitalize} job ##{params[:id]}."
         rescue SolidQueue::Execution::UndiscardableError => error
-          failure(error.message)
+          toast error.message, level: :error
         end
 
         # Selected ids are re-checked against the live relation rather than
@@ -61,14 +67,15 @@ module Flightdeck
         # may have retried, finished or discarded any of them.
         def act_on_selected
           ids = Array(params[:job_ids]).map { |id| Integer(id, exception: false) }.compact.uniq
-          return failure("Nothing selected.") if ids.empty?
+          return toast("Nothing selected.", level: :error) if ids.empty?
 
           if ids.size > Flightdeck.config.bulk_action_limit
-            return failure("Select at most #{number_with_delimiter(Flightdeck.config.bulk_action_limit)} jobs.")
+            return toast("Select at most #{number_with_delimiter(Flightdeck.config.bulk_action_limit)} jobs.",
+                         level: :error)
           end
 
           executions = target_relation.where(job_id: ids).to_a
-          return failure("Those jobs are no longer #{blocked_reason}.") if executions.empty?
+          return toast("Those jobs are no longer #{blocked_reason}.", level: :error) if executions.empty?
 
           applied = 0
           SolidQueue::Record.transaction do
@@ -81,13 +88,13 @@ module Flightdeck
           missing = ids.size - applied
           message = "#{past_tense.capitalize} #{pluralize_jobs(applied)}."
           message += " #{missing} had already moved on." if missing.positive?
-          success(message)
+          toast message
         end
 
         def act_on_all_matching
           result = BulkAction.new(relation: target_relation).call { |execution| apply(execution) }
 
-          success(bulk_message(result), continuable: result.remaining?)
+          toast bulk_message(result), continuable: result.remaining?
         end
 
         def bulk_message(result)
@@ -100,27 +107,6 @@ module Flightdeck
         end
 
         # --- responses --------------------------------------------------------
-
-        def success(message, continuable: false)
-          { message: message, level: :success, continuable: continuable }
-        end
-
-        def failure(message)
-          { message: message, level: :error, continuable: false }
-        end
-
-        def respond_with(result)
-          @toast = result
-
-          respond_to do |format|
-            format.turbo_stream do
-              build_refreshed_list
-              render "flightdeck/jobs/actions/create", formats: :turbo_stream
-            end
-            format.html { redirect_back_to_list(result) }
-            format.any { redirect_back_to_list(result) }
-          end
-        end
 
         # The list the action was launched from, re-queried so the same response
         # that carries the toast also carries settled rows and counts.
@@ -135,14 +121,27 @@ module Flightdeck
           end
         end
 
+        # `target: nil` because the jobs frame is the one frame whose links
+        # navigate in place (the pager); it matches the index view's frame.
+        def refreshed_frame
+          { id: "fd-jobs", target: nil, url: refreshed_list_url,
+            partial: "flightdeck/jobs/list",
+            locals: { query: @refreshed_query, rows: @refreshed_rows, groups: @refreshed_groups } }
+        end
+
+        # URL the refreshed frame should poll, rebuilt from the filters the
+        # action carried rather than from the POST's own path.
+        def refreshed_list_url
+          jobs_path(list_filters.merge(state: @refreshed_state == :all ? nil : @refreshed_state).compact)
+        end
+
         def refreshed_state
           state = params[:state].presence&.to_sym || default_state
           JobsQuery::STATES.include?(state) ? state : :all
         end
 
-        def redirect_back_to_list(result)
-          flash[result[:level] == :error ? :alert : :notice] = result[:message]
-          redirect_to jobs_path(list_filters.merge(state: params[:state].presence || default_state))
+        def list_url
+          jobs_path(list_filters.merge(state: params[:state].presence || default_state))
         end
 
         def default_state = :failed
