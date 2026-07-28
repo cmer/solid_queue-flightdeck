@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- The failed-jobs selection bar's "apply to all N matching" button always
+  retried, even when you meant to discard. It is now two explicit buttons,
+  "Retry all" and "Discard all".
+
 ## [0.5.2] - 2026-07-27
 
 ### Fixed

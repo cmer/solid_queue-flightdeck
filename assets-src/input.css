@@ -658,6 +658,7 @@ input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px;
   margin-bottom: 12px; font-size: 13px; color: var(--accent-ink);
 }
 .fd-bulkbar .spacer { flex: 1; }
+.fd-bulkbar-all { color: var(--ink-3); }
 .fd-group-row td {
   background: var(--panel-2); font: 500 11px/1.6 var(--font-mono); color: var(--ink-2);
   letter-spacing: .03em; padding: 6px 14px;

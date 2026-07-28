@@ -139,6 +139,24 @@ class Flightdeck::JobsTest < FlightdeckIntegrationTest
     assert_select "input[type=checkbox][name='job_ids[]']", count: 3
   end
 
+  # The bulk bar is one form posting to the retry endpoint, so every button that
+  # is not a retry must carry its own formaction. A neutral "apply to all"
+  # button once inherited the form action and retried when discard was meant.
+  test "every destructive button in the bulk bar posts to the discard endpoint" do
+    2.times { create_failed_job }
+
+    get_fd "/flightdeck/jobs?state=failed"
+
+    assert_response :success
+    assert_select ".fd-bulkbar button[formaction^=?]", "/flightdeck/jobs/discard", count: 2
+    assert_select ".fd-bulkbar button[name=scope][value=all]", count: 2 do |buttons|
+      assert_equal 1, buttons.count { |b| b["formaction"].to_s.start_with?("/flightdeck/jobs/discard") },
+                   "one all-matching button must discard"
+      assert_equal 1, buttons.count { |b| b["formaction"].blank? },
+                   "one all-matching button must fall through to the form's retry action"
+    end
+  end
+
   test "the job detail page renders the error, arguments, metadata and timeline" do
     job = create_failed_job(class_name: "Billing::ChargeSubscriptionJob",
                             queue_name: "critical",

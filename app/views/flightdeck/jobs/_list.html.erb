@@ -9,10 +9,15 @@
               formaction="<%= bulk_discard_jobs_path(list_filters.merge(state: :failed)) %>"
               data-turbo-confirm="Permanently discard the selected jobs? This cannot be undone.">Discard selected</button>
       <span class="spacer"></span>
-      <button type="submit" name="scope" value="all" class="fd-btn sm"
-              data-turbo-confirm="Retry all failed jobs matching the current filter?">
-        or apply to all <%= fd_count(query.count, capped: query.count_capped?) %> matching
-      </button>
+      <%# Each "all matching" button names its own action: a single neutral
+          "apply to all" button inherited the form's action and silently
+          retried when the user meant to discard. %>
+      <span class="fd-bulkbar-all">or all <%= fd_count(query.count, capped: query.count_capped?) %> matching:</span>
+      <button type="submit" name="scope" value="all" class="fd-btn sm primary"
+              data-turbo-confirm="Retry all failed jobs matching the current filter?">Retry all</button>
+      <button type="submit" name="scope" value="all" class="fd-btn sm danger"
+              formaction="<%= bulk_discard_jobs_path(list_filters.merge(state: :failed)) %>"
+              data-turbo-confirm="Permanently discard all failed jobs matching the current filter? This cannot be undone.">Discard all</button>
     </div>
 
     <div class="fd-card">
