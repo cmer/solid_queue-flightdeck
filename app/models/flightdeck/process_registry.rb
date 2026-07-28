@@ -63,8 +63,6 @@ module Flightdeck
       end
     end
 
-    def self.all = new
-
     def nodes
       @nodes ||= build_nodes
     end
@@ -80,10 +78,6 @@ module Flightdeck
         roots.each { |root| root.children = by_supervisor.fetch(root.id, []) }
         roots
       end
-    end
-
-    def flattened
-      tree.flat_map { |root| [ root, *root.children ] }
     end
 
     def dead = nodes.select(&:dead?)

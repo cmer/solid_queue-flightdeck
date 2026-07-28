@@ -93,10 +93,6 @@ module Flightdeck
       Flightdeck::ArgumentsPreview.format(preview, length: length)
     end
 
-    def fd_jobs_url(overrides = {})
-      jobs_path(list_filters.merge(state: params[:state].presence).compact.merge(overrides))
-    end
-
     # The frame refreshes itself by re-requesting the URL it is showing, so
     # filters, state tab and cursor all survive a poll.
     def fd_current_list_url

@@ -41,8 +41,6 @@ module Flightdeck
       def ever_run? = last_run_at.present?
     end
 
-    def self.all = new.rows
-
     def rows
       @rows ||= tasks.map do |task|
         run = last_runs[task.key]

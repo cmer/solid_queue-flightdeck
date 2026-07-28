@@ -262,7 +262,7 @@ class Flightdeck::RecurringPageTest < FlightdeckIntegrationTest
     post_fd "/flightdeck/recurring_tasks/#{task.id}/run"
 
     assert_equal 1, SolidQueue::RecurringExecution.where(task_key: "sync").count
-    assert_equal :ok, Flightdeck::RecurringCatalog.all.first.last_status
+    assert_equal :ok, Flightdeck::RecurringCatalog.new.rows.first.last_status
   end
 
   test "the enqueued job is ready to be picked up" do

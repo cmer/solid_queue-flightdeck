@@ -7,7 +7,7 @@ class Flightdeck::RecurringCatalogTest < ActiveSupport::TestCase
     create_recurring_task(key: "sync", schedule: "*/5 * * * *")
     create_recurring_task(key: "digest", schedule: "0 23 * * *")
 
-    rows = Flightdeck::RecurringCatalog.all
+    rows = Flightdeck::RecurringCatalog.new.rows
 
     assert_equal %w[digest sync], rows.map(&:key)
     assert_equal "RecurringProbeJob", rows.first.job_class
@@ -17,7 +17,7 @@ class Flightdeck::RecurringCatalogTest < ActiveSupport::TestCase
   test "next run comes from the task's own schedule API" do
     task = create_recurring_task(key: "hourly", schedule: "0 * * * *")
 
-    row = Flightdeck::RecurringCatalog.all.first
+    row = Flightdeck::RecurringCatalog.new.rows.first
 
     assert_equal task.next_time, row.next_run_at
     assert_operator row.next_run_in, :>, 0
@@ -26,7 +26,7 @@ class Flightdeck::RecurringCatalogTest < ActiveSupport::TestCase
   test "a task that has never run says so" do
     create_recurring_task(key: "fresh")
 
-    row = Flightdeck::RecurringCatalog.all.first
+    row = Flightdeck::RecurringCatalog.new.rows.first
 
     refute row.ever_run?
     assert_nil row.last_status
@@ -36,7 +36,7 @@ class Flightdeck::RecurringCatalogTest < ActiveSupport::TestCase
     task = create_recurring_task(key: "sync")
     record_recurring_run(task, run_at: 10.minutes.ago)
 
-    row = Flightdeck::RecurringCatalog.all.first
+    row = Flightdeck::RecurringCatalog.new.rows.first
 
     assert row.ever_run?
     assert_equal :ok, row.last_status
@@ -47,7 +47,7 @@ class Flightdeck::RecurringCatalogTest < ActiveSupport::TestCase
     task = create_recurring_task(key: "reconcile")
     record_recurring_run(task, run_at: 10.minutes.ago, failed: true)
 
-    row = Flightdeck::RecurringCatalog.all.first
+    row = Flightdeck::RecurringCatalog.new.rows.first
 
     assert_equal :failed, row.last_status
     assert row.failed?
@@ -58,7 +58,7 @@ class Flightdeck::RecurringCatalogTest < ActiveSupport::TestCase
     record_recurring_run(task, run_at: 2.hours.ago, failed: true)
     record_recurring_run(task, run_at: 10.minutes.ago)
 
-    assert_equal :ok, Flightdeck::RecurringCatalog.all.first.last_status
+    assert_equal :ok, Flightdeck::RecurringCatalog.new.rows.first.last_status
   end
 
   test "deleting a job cascades its recurring execution away where FKs are enforced" do
@@ -68,7 +68,7 @@ class Flightdeck::RecurringCatalogTest < ActiveSupport::TestCase
     job.delete
 
     assert_equal 0, SolidQueue::RecurringExecution.count
-    refute Flightdeck::RecurringCatalog.all.first.ever_run?
+    refute Flightdeck::RecurringCatalog.new.rows.first.ever_run?
   end
 
   test "statuses do not leak between tasks" do
@@ -77,7 +77,7 @@ class Flightdeck::RecurringCatalogTest < ActiveSupport::TestCase
     record_recurring_run(ok, run_at: 5.minutes.ago)
     record_recurring_run(bad, run_at: 5.minutes.ago, failed: true)
 
-    by_key = Flightdeck::RecurringCatalog.all.index_by(&:key)
+    by_key = Flightdeck::RecurringCatalog.new.rows.index_by(&:key)
 
     assert_equal :ok, by_key["aaa_ok"].last_status
     assert_equal :failed, by_key["zzz_failed"].last_status
@@ -105,7 +105,7 @@ class Flightdeck::RecurringCatalogPurgedJobTest < ActiveSupport::TestCase
     assert_nil SolidQueue::Job.find_by(id: job.id)
     assert_equal 1, SolidQueue::RecurringExecution.count, "the execution row should have survived"
 
-    row = Flightdeck::RecurringCatalog.all.first
+    row = Flightdeck::RecurringCatalog.new.rows.first
 
     assert row.ever_run?
     assert_equal :unknown, row.last_status

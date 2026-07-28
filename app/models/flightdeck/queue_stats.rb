@@ -31,8 +31,6 @@ module Flightdeck
       def idle? = depth.zero? && completed_in_window.zero?
     end
 
-    def self.all = new.rows
-
     def rows
       @rows ||= names.sort.map do |name|
         Row.new(

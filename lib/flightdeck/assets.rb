@@ -58,12 +58,6 @@ module Flightdeck
         CONTENT_TYPES.fetch(File.extname(file), "application/octet-stream")
       end
 
-      def reload!
-        remove_instance_variable(:@manifest) if defined?(@manifest)
-        remove_instance_variable(:@by_digested_name) if defined?(@by_digested_name)
-        manifest
-      end
-
       private
         def load_manifest
           path = root.join("manifest.json")
