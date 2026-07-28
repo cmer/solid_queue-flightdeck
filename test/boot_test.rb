@@ -31,6 +31,33 @@ class Flightdeck::BootTest < ActiveSupport::TestCase
     assert result["with_host_token_body_has_shell"], "the dashboard shell did not render"
   end
 
+  # Regression: the layout used to call route helpers through the host's
+  # mounted-route proxy, hardcoded as `flightdeck`. That method's name comes
+  # from the mount's route name, so `namespace :admin { mount ... }` (route
+  # name admin_flightdeck) left every page raising NameError. This boots a host
+  # whose only mount is namespaced — the `flightdeck` proxy does not exist in
+  # the process — and whose own `jobs_path` competes with the engine's.
+  test "the dashboard renders when the only mount is inside a namespace" do
+    result = probe(
+      "FLIGHTDECK_TEST_NAMESPACED_MOUNT" => "1",
+      "FLIGHTDECK_TEST_BASE_CONTROLLER" => "HostBaseController",
+      "FLIGHTDECK_PROBE_REQUEST" => "1",
+      "FLIGHTDECK_PROBE_MOUNT" => "/admin/jobs"
+    )
+
+    assert result["booted"], "dummy app failed to boot: #{result["error"]} #{result["backtrace"]}"
+    assert_equal 200, result["with_host_token"],
+                 "the dashboard did not render under the namespaced mount: #{result["with_host_token_error"]}"
+    assert_equal "/admin/jobs/", result["turbo_root"]
+
+    hrefs = result["nav_hrefs"]
+    assert_operator hrefs.size, :>=, 5, "expected the sidebar links, got #{hrefs.inspect}"
+    hrefs.each do |href|
+      assert href.start_with?("/admin/jobs/"),
+             "nav link #{href.inspect} is not under the namespaced mount (the host's own jobs_path must not win)"
+    end
+  end
+
   test "without a base controller the engine still refuses unauthenticated requests" do
     result = probe("FLIGHTDECK_PROBE_REQUEST" => "1")
 
@@ -47,7 +74,9 @@ class Flightdeck::BootTest < ActiveSupport::TestCase
         "FLIGHTDECK_USERNAME" => nil,
         "FLIGHTDECK_PASSWORD" => nil,
         "FLIGHTDECK_TEST_BASE_CONTROLLER" => nil,
-        "FLIGHTDECK_PROBE_REQUEST" => nil
+        "FLIGHTDECK_TEST_NAMESPACED_MOUNT" => nil,
+        "FLIGHTDECK_PROBE_REQUEST" => nil,
+        "FLIGHTDECK_PROBE_MOUNT" => nil
       }
 
       stdout, stderr, status = Open3.capture3(base.merge(env), RbConfig.ruby, PROBE)

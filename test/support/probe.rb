@@ -17,14 +17,19 @@ begin
   if ENV["FLIGHTDECK_PROBE_REQUEST"].present?
     require "rack/test"
 
+    mount = ENV["FLIGHTDECK_PROBE_MOUNT"].presence || "/flightdeck"
     session = Rack::Test::Session.new(Rails.application)
 
-    session.get "/flightdeck"
+    session.get mount
     result["without_host_token"] = session.last_response.status
 
-    session.get "/flightdeck", {}, { "HTTP_X_HOST_TOKEN" => "hosted" }
+    session.get mount, {}, { "HTTP_X_HOST_TOKEN" => "hosted" }
     result["with_host_token"] = session.last_response.status
-    result["with_host_token_body_has_shell"] = session.last_response.body.include?("fd-app")
+    body = session.last_response.body
+    result["with_host_token_body_has_shell"] = body.include?("fd-app")
+    result["with_host_token_error"] = body[/<title>(.*?)<\/title>/m, 1] unless session.last_response.ok?
+    result["turbo_root"] = body[/<meta name="turbo-root" content="([^"]*)"/, 1]
+    result["nav_hrefs"] = body.scan(/<a class="fd-nav-link[^"]*" href="([^"]*)"/).flatten
   end
 rescue Exception => error # rubocop:disable Lint/RescueException
   result["error"] = "#{error.class}: #{error.message}"

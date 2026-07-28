@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><%= content_for?(:title) ? yield(:title) : "Flightdeck" %></title>
-    <meta name="turbo-root" content="<%= flightdeck.root_path %>">
+    <meta name="turbo-root" content="<%= root_path %>">
     <%= csrf_meta_tags %>
     <% if (css = flightdeck_asset_path("flightdeck.css")) %>
       <link rel="stylesheet" href="<%= css %>">
@@ -22,36 +22,36 @@
         </div>
 
         <nav class="fd-nav">
-          <%= link_to flightdeck.root_path, class: "fd-nav-link#{" on" if current_page?(flightdeck.root_path)}" do %>
+          <%= link_to root_path, class: "fd-nav-link#{" on" if current_page?(root_path)}" do %>
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M1.5 13.5v-5h3v5m1.5 0v-9h3v9m1.5 0v-12h3v12" stroke-linejoin="round"/></svg>
             Overview
           <% end %>
 
           <span class="fd-nav-section">Jobs</span>
 
-          <%= link_to flightdeck.jobs_path, class: "fd-nav-link#{" on" if fd_nav_active?(:all)}" do %>
+          <%= link_to jobs_path, class: "fd-nav-link#{" on" if fd_nav_active?(:all)}" do %>
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="2.5" width="12" height="10" rx="1.5"/><path d="M4.5 6h6M4.5 9h4"/></svg>
             All jobs <span class="fd-nav-count"><%= fd_nav_count(:all) %></span>
           <% end %>
 
-          <%= link_to flightdeck.jobs_path(state: :failed), class: "fd-nav-link#{" on" if fd_nav_active?(:failed)}" do %>
+          <%= link_to jobs_path(state: :failed), class: "fd-nav-link#{" on" if fd_nav_active?(:failed)}" do %>
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="7.5" cy="7.5" r="6"/><path d="M7.5 4.5v3.5M7.5 10.4v.2"/></svg>
             Failed <span class="fd-nav-count"><%= fd_nav_count(:failed) %></span>
           <% end %>
 
           <span class="fd-nav-section">Infrastructure</span>
 
-          <%= link_to flightdeck.queues_path, class: "fd-nav-link#{" on" if controller_name == "queues"}" do %>
+          <%= link_to queues_path, class: "fd-nav-link#{" on" if controller_name == "queues"}" do %>
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 4h11M2 7.5h11M2 11h7"/></svg>
             Queues <span class="fd-nav-count"><%= fd_nav_queue_count %></span>
           <% end %>
 
-          <%= link_to flightdeck.processes_path, class: "fd-nav-link#{" on" if controller_name == "processes"}" do %>
+          <%= link_to processes_path, class: "fd-nav-link#{" on" if controller_name == "processes"}" do %>
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="2" width="11" height="7" rx="1.5"/><path d="M5 13h5M7.5 9v4"/></svg>
             Processes <span class="fd-nav-count <%= "alert" if fd_nav_any_dead_processes? %>"><%= fd_nav_process_count %></span>
           <% end %>
 
-          <%= link_to flightdeck.recurring_tasks_path, class: "fd-nav-link#{" on" if controller_name == "recurring_tasks"}" do %>
+          <%= link_to recurring_tasks_path, class: "fd-nav-link#{" on" if controller_name == "recurring_tasks"}" do %>
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="7.5" cy="7.5" r="6"/><path d="M7.5 4v3.5l2.5 1.5"/></svg>
             Recurring <span class="fd-nav-count"><%= fd_nav_recurring_count %></span>
           <% end %>

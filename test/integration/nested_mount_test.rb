@@ -9,12 +9,16 @@ require "test_helper"
 #     mount Flightdeck::Engine, at: "/flightdeck"
 #   end
 #
-# Nothing in the engine may assume it lives at /flightdeck. Every URL it emits
-# has to be derived from the current request's script_name, so the dummy app
-# mounts the engine twice and these tests drive the deeper mount.
+# Nothing in the engine may assume it lives at /flightdeck — or that the mount's
+# route name is `flightdeck`: a namespaced mount is named admin_flightdeck, and
+# a host can pick anything with `as:`. Every URL the engine emits has to be
+# derived from the current request's script_name, so the dummy app mounts the
+# engine three times (plain, namespaced, renamed) and these tests drive the
+# non-plain mounts.
 class Flightdeck::NestedMountTest < FlightdeckIntegrationTest
   MOUNT = "/admin/flightdeck"
   OTHER_MOUNT = "/flightdeck"
+  RENAMED_MOUNT = "/ops/dash"
 
   # Any absolute Flightdeck URL that is not under the nested mount means
   # something emitted a path from the wrong mount point.
@@ -166,6 +170,43 @@ class Flightdeck::NestedMountTest < FlightdeckIntegrationTest
     assert_response :success
     assert_select ".fd-seg a[href^=?]", "#{MOUNT}/"
     assert_no_bare_mount_urls response.body, "the range control"
+  end
+
+  # --- a mount with a custom route name (as: :renamed) ----------------------
+
+  test "the dashboard renders under a mount with a custom route name" do
+    create_full_scenario
+
+    get_fd RENAMED_MOUNT
+
+    assert_response :success
+    assert_select ".fd-tile", count: 6
+    assert_includes response.body, %(<meta name="turbo-root" content="#{RENAMED_MOUNT}/">)
+  end
+
+  test "every URL under the renamed mount stays inside it" do
+    create_failed_job
+
+    get_fd RENAMED_MOUNT
+
+    document = Nokogiri::HTML(response.body)
+    links = document.css(".fd-nav-link").map { |link| link["href"] }
+
+    assert_operator links.size, :>=, 5
+    links.each do |href|
+      assert href.start_with?("#{RENAMED_MOUNT}/"), "nav link #{href.inspect} is not under the renamed mount"
+    end
+
+    stray = response.body.scan(%r{(?:href|src|action|content)="(/(?:admin/)?flightdeck/[^"]*)"}).flatten
+    assert_empty stray, "the renamed mount emitted URLs from another mount: #{stray.uniq.first(5).inspect}"
+  end
+
+  test "asset links point at the renamed mount" do
+    get_fd RENAMED_MOUNT
+
+    css = Flightdeck::Assets.digested_name("flightdeck.css")
+
+    assert_includes response.body, %(href="#{RENAMED_MOUNT}/assets/#{css}")
   end
 
   # --- both mounts coexist --------------------------------------------------

@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- The dashboard no longer 500s when the engine is mounted under a named scope
+  or namespace (e.g. `namespace :admin { mount Flightdeck::Engine, at: "/jobs" }`)
+  or with a custom route name via `as:`.
+
 ## [0.5.1] - 2026-07-27
 
 ### Added

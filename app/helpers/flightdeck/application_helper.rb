@@ -9,7 +9,7 @@ module Flightdeck
       digested = Flightdeck::Assets.digested_name(logical_name)
       return nil unless digested
 
-      flightdeck.asset_file_path(name: digested)
+      asset_file_path(name: digested)
     end
 
     # Sidebar counts are capped like every other count, and degrade to "—"
