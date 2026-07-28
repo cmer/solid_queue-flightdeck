@@ -90,7 +90,9 @@ module Flightdeck
     end
 
     private
-      JOB_LIST_COLUMNS = -> { SolidQueue::Job.column_names - [ "arguments" ] }
+      # The columns list queries must never drag along: `arguments` on jobs and
+      # `error` on failed_executions can each run to kilobytes per row.
+      PAYLOAD_COLUMNS = %w[arguments error].freeze
 
       # Only the filters change what a count means — the cursor and page size do
       # not, so they are deliberately absent from the key.
@@ -124,11 +126,10 @@ module Flightdeck
         relation.select(driving_columns).to_a
       end
 
-      # Never `SELECT *`: it would drag `arguments` (jobs) or `error`
-      # (failed_executions) through every list query.
+      # Never `SELECT *`: it would drag a payload column through every list
+      # query.
       def driving_columns
-        names = model.column_names - [ "arguments", "error" ]
-        names.map { |name| model.arel_table[name] }
+        (model.column_names - PAYLOAD_COLUMNS).map { |name| model.arel_table[name] }
       end
 
       def rows_from_executions(executions)
@@ -159,25 +160,16 @@ module Flightdeck
         annotations = state == :finished ? {} : JobRow.annotate(job_ids)
 
         jobs.map do |job|
-          annotation = annotations[job.id]
-
           JobRow.new(
             job: job,
-            state: state_for(job, annotation),
+            state: JobRow.state_for(job, annotations[job.id]),
             args_preview: previews[job.id]
           )
         end
       end
 
-      def state_for(job, annotation)
-        return :finished if job.finished_at.present?
-        return annotation[:state] if annotation
-
-        :unknown
-      end
-
       def jobs_by_id(job_ids)
-        SolidQueue::Job.where(id: job_ids).select(JOB_LIST_COLUMNS.call).index_by(&:id)
+        SolidQueue::Job.where(id: job_ids).select(SolidQueue::Job.column_names - PAYLOAD_COLUMNS).index_by(&:id)
       end
 
       def processes_by_id(process_ids)

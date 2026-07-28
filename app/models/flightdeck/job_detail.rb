@@ -27,7 +27,7 @@ module Flightdeck
 
     def initialize(job:, annotation: nil)
       @job = job
-      @state = resolve_state(annotation)
+      @state = JobRow.state_for(job, annotation)
       @execution = load_execution(annotation)
       @process = load_process
     end
@@ -140,13 +140,6 @@ module Flightdeck
     end
 
     private
-      def resolve_state(annotation)
-        return :finished if job.finished_at.present?
-        return annotation[:state] if annotation
-
-        :unknown
-      end
-
       def load_execution(annotation)
         return nil unless annotation
 

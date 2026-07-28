@@ -21,6 +21,16 @@ module Flightdeck
         name && name.constantize
       end
 
+      # How a job's state is derived, in one place: `finished_at` wins, then
+      # whichever execution table `annotate` found the job in, then :unknown
+      # for the transition window where a job is between tables.
+      def state_for(job, annotation)
+        return :finished if job.finished_at.present?
+        return annotation[:state] if annotation
+
+        :unknown
+      end
+
       # Resolves the state of an already-loaded page of jobs with one
       # `WHERE job_id IN (page_ids)` lookup per executions table. Returns
       # { job_id => { state:, execution_id:, process_id: } }.
