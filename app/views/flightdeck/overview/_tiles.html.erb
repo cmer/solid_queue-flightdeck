@@ -3,7 +3,7 @@
     <div class="fd-card fd-tile">
       <div class="lbl"><%= tile.label %></div>
       <div class="val">
-        <%= tile.value.is_a?(Numeric) ? number_with_delimiter(tile.value) : tile.value %><%
+        <%= tile.value %><%
           %><% if tile.unit %><small><%= tile.unit %></small><% end %>
       </div>
       <div class="delta <%= fd_delta_class(tile) %>">

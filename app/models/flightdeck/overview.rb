@@ -8,6 +8,8 @@ module Flightdeck
     RECENT_FAILURES = 5
     TOP_QUEUES = 6
 
+    # `value` is always display-ready text — a delimited count, a duration, or
+    # "—" — so the view prints it without asking what kind of number it was.
     # trend is :up / :down / :flat and says which way the number moved, while
     # `good` says whether that movement is a good thing — more throughput is
     # good, more failures are not.
@@ -143,7 +145,7 @@ module Flightdeck
 
         Tile.new(
           label: "Processed · 24h",
-          value: processed_24h,
+          value: number(processed_24h),
           detail: delta.nil? ? "no prior window to compare" : "#{delta.abs}% vs prior 24h",
           trend: trend_for(delta),
           good: delta.nil? || delta >= 0
@@ -155,7 +157,7 @@ module Flightdeck
 
         Tile.new(
           label: "Failed · 24h",
-          value: failed_24h,
+          value: number(failed_24h),
           detail: rate.nil? ? "nothing finished yet" : "#{rate}% failure rate",
           trend: failed_24h.positive? ? :up : :flat,
           good: failed_24h.zero?
@@ -163,24 +165,24 @@ module Flightdeck
       end
 
       def ready_tile
-        Tile.new(label: "Ready now", value: ready_now, detail: "waiting to be claimed", trend: :flat, good: true)
+        Tile.new(label: "Ready now", value: number(ready_now), detail: "waiting to be claimed", trend: :flat, good: true)
       end
 
       def scheduled_tile
         detail =
           if next_scheduled_at.nil? then "nothing scheduled"
           elsif next_scheduled_at <= now then "due now"
-          else "next due in #{humanize_duration(next_scheduled_at - now)}"
+          else "next due in #{Duration.humanize(next_scheduled_at - now)}"
           end
 
-        Tile.new(label: "Scheduled", value: scheduled, detail: detail, trend: :flat, good: true)
+        Tile.new(label: "Scheduled", value: number(scheduled), detail: detail, trend: :flat, good: true)
       end
 
       def in_progress_tile
         Tile.new(
           label: "In progress",
-          value: in_progress,
-          unit: slots ? "/ #{ActiveSupport::NumberHelper.number_to_delimited(slots)} slots" : nil,
+          value: number(in_progress),
+          unit: slots ? "/ #{number(slots)} slots" : nil,
           detail: utilization ? "#{utilization}% utilization" : "no worker capacity reported",
           trend: :flat,
           good: true
@@ -190,28 +192,19 @@ module Flightdeck
       def oldest_ready_tile
         Tile.new(
           label: "Oldest ready",
-          value: oldest_ready_age ? humanize_duration(oldest_ready_age) : "—",
+          value: oldest_ready_age ? Duration.humanize(oldest_ready_age) : "—",
           detail: oldest_ready_age ? "longest a job has waited" : "nothing waiting",
           trend: :flat,
           good: true
         )
       end
 
+      def number(value) = ActiveSupport::NumberHelper.number_to_delimited(value)
+
       def trend_for(delta)
         return :flat if delta.nil? || delta.abs < 0.05
 
         delta.positive? ? :up : :down
-      end
-
-      def humanize_duration(seconds)
-        seconds = seconds.to_f.abs
-        case seconds
-        when 0...1 then "#{(seconds * 1000).round}ms"
-        when 1...60 then "#{seconds.round(1).to_s.sub(/\.0\z/, "")}s"
-        when 60...3600 then "#{(seconds / 60).round}m"
-        when 3600...86_400 then "#{(seconds / 3600).round(1)}h"
-        else "#{(seconds / 86_400).round(1)}d"
-        end
       end
   end
 end

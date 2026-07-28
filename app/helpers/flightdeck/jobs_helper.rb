@@ -54,16 +54,7 @@ module Flightdeck
     end
 
     def fd_duration(seconds)
-      return "—" if seconds.nil?
-
-      seconds = seconds.to_f.abs
-      case seconds
-      when 0...1 then "#{(seconds * 1000).round}ms"
-      when 1...60 then "#{seconds.round(1)}s"
-      when 60...3600 then "#{(seconds / 60).round}m"
-      when 3600...86_400 then "#{(seconds / 3600).round(1)}h"
-      else "#{(seconds / 86_400).round(1)}d"
-      end
+      seconds.nil? ? "—" : Flightdeck::Duration.humanize(seconds)
     end
 
     def fd_ago(time)

@@ -49,14 +49,10 @@ module Flightdeck
       private
         def raw_max = points.filter_map(&:seconds).max.to_f
 
+        # The zero gridline reads "0s" rather than "0ms": it is an axis origin,
+        # not a measurement.
         def format_value(value)
-          case value
-          when 0 then "0s"
-          when 0...1 then "#{(value * 1000).round}ms"
-          when 1...60 then "#{value.round(1).to_s.sub(/\.0\z/, "")}s"
-          when 60...3600 then "#{(value / 60).round}m"
-          else "#{(value / 3600).round(1)}h"
-          end
+          value.zero? ? "0s" : Flightdeck::Duration.humanize(value)
         end
 
         def point_title(point)
