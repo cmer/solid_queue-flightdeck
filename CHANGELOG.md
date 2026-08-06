@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- The dashboard no longer breaks under a strict, nonce-based Content Security
+  Policy. The layout now renders `csp_meta_tag`, so the bundled Turbo can nonce
+  the `<style>`/`<script>` it injects at runtime. No effect on hosts without a
+  CSP configured.
+
 ## [0.6.0] - 2026-07-28
 
 ### Changed
