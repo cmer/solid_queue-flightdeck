@@ -36,5 +36,5 @@ Flightdeck::Engine.routes.draw do
       to: "assets#show",
       as: :asset_file,
       format: false,
-      constraints: { name: /flightdeck-[0-9a-f]{12}\.(?:css|js)/ }
+      constraints: { name: /flightdeck-(?:[a-z0-9-]+-)?[0-9a-f]{12}\.(?:css|js|woff2)/ }
 end

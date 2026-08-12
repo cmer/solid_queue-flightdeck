@@ -42,6 +42,43 @@ class Flightdeck::DashboardSystemTest < ApplicationSystemTestCase
     JS
   end
 
+  def pick_font(slug)
+    find(".fd-font-picker select").select(Flightdeck::UiFonts.label(slug))
+  end
+
+  def font_stamp
+    page.evaluate_script("document.documentElement.getAttribute('data-font')")
+  end
+
+  # The resolved --font-ui stack, which is what every rule in the stylesheet
+  # actually reads.
+  def rendered_ui_font
+    page.evaluate_script("getComputedStyle(document.documentElement).getPropertyValue('--font-ui')")
+  end
+
+  # The first family in an element's computed stack: what it is really drawn
+  # in, as opposed to what was asked for.
+  def used_font_family(selector)
+    page.evaluate_script(<<~JS).to_s.delete('"').strip
+      getComputedStyle(document.querySelector('#{selector}')).fontFamily.split(',')[0]
+    JS
+  end
+
+  # False until the woff2 has arrived and parsed, so it distinguishes "asked
+  # for the family" from "is drawing in it".
+  def font_loaded?(family)
+    page.evaluate_script(%(document.fonts.check("14px '#{family}'")))
+  end
+
+  # The pick is remembered in localStorage, so without this a test inherits
+  # whichever font the test before it chose.
+  def reset_font_preference
+    page.execute_script(<<~JS)
+      try { window.localStorage.removeItem('flightdeck:font'); } catch (error) {}
+    JS
+    page.refresh
+  end
+
   # Regression for the "Content missing" bug: a job link lives inside the
   # polling #fd-jobs frame, and its destination has no such frame. Without an
   # explicit escape, Turbo swaps "Content missing" into the frame instead of
@@ -123,6 +160,63 @@ class Flightdeck::DashboardSystemTest < ApplicationSystemTestCase
     visit "/flightdeck/queues"
 
     assert_equal chosen, theme_stamp
+  end
+
+  # The whole point of switching on a custom property: no reload, and the face
+  # really changes rather than the stamp changing under an unloaded font.
+  test "picking a font restyles the shell immediately" do
+    visit "/flightdeck"
+    reset_font_preference
+
+    before = rendered_ui_font
+    assert_includes before, Flightdeck::UiFonts.label(Flightdeck::UiFonts::DEFAULT)
+
+    pick_font("inter")
+
+    assert_equal "inter", font_stamp
+    wait_until(message: "the body never rendered in the picked face") { rendered_ui_font.include?("Inter") }
+    assert_equal "Inter", used_font_family(".fd-nav-link"), "the sidebar should follow the pick too"
+  end
+
+  # Guards the whole chain per face: manifest entry, @font-face rule, relative
+  # URL, and a woff2 the browser can actually parse. A missing or corrupt file
+  # shows up as a silent fallback to system-ui, which no other test would see.
+  test "every offered face is really loaded, not silently substituted" do
+    visit "/flightdeck"
+
+    Flightdeck::UiFonts::BUNDLED.each do |slug|
+      family = Flightdeck::UiFonts.label(slug)
+      pick_font(slug)
+
+      wait_until(message: "#{family} never loaded") { font_loaded?(family) }
+      assert_equal family, used_font_family("body"), "the body should be drawn in #{family}"
+    end
+  ensure
+    reset_font_preference
+  end
+
+  test "the mono face is unaffected by the UI font" do
+    visit "/flightdeck/jobs"
+    reset_font_preference
+    mono_before = used_font_family("table.fd-data th")
+
+    pick_font("manrope")
+    wait_until(message: "the UI font never changed") { rendered_ui_font.include?("Manrope") }
+
+    assert_equal mono_before, used_font_family("table.fd-data th")
+    assert_equal "IBM Plex Mono", mono_before
+  end
+
+  test "the font choice survives a page navigation" do
+    visit "/flightdeck"
+    pick_font("public-sans")
+
+    visit "/flightdeck/queues"
+
+    assert_equal "public-sans", font_stamp
+    assert_equal "public-sans", find(".fd-font-picker select").value
+  ensure
+    reset_font_preference
   end
 
   test "retrying a failed job from the list shows a toast and drops the row" do

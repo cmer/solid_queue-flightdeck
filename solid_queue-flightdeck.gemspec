@@ -25,7 +25,8 @@ Gem::Specification.new do |spec|
     "config/**/*",
     "lib/**/*",
     "README.md",
-    "MIT-LICENSE"
+    "MIT-LICENSE",
+    "FONT-LICENSES.md"
   ]
 
   spec.require_paths = [ "lib" ]

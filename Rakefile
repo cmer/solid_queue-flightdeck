@@ -50,11 +50,15 @@ end
 task default: %i[test]
 
 namespace :assets do
-  desc "Build flightdeck.css + flightdeck.js and the digested manifest"
+  desc "Build flightdeck.css + flightdeck.js + the fonts, and the digested manifest"
   task :build do
     FileUtils.mkdir_p(OUT)
 
-    css = build_css
+    # Fonts first: the stylesheet's @font-face rules point at their digested
+    # filenames, so those have to exist before the CSS is hashed.
+    fonts = build_fonts
+
+    css = build_css(fonts)
     js = build_js
 
     manifest = {}
@@ -72,6 +76,8 @@ namespace :assets do
         "size" => content.bytesize
       }
     end
+
+    manifest.merge!(fonts)
 
     File.write(MANIFEST, JSON.pretty_generate(manifest) + "\n")
     prune_stale(manifest)
@@ -108,16 +114,23 @@ namespace :assets do
       problems << "#{logical}: not present in the manifest" unless manifest.key?(logical)
     end
 
+    # A face vendored but never built would silently fall back to system-ui in
+    # the browser, which is easy to miss by eye.
+    vendored = JSON.parse(File.read(File.join(SRC, "fonts", "fonts.json"))).keys
+    (vendored - manifest.keys).each do |logical|
+      problems << "#{logical}: vendored in assets-src/fonts but not in the manifest"
+    end
+
     abort "Stale assets:\n  " + problems.join("\n  ") if problems.any?
 
-    puts "assets are fresh (#{manifest.keys.join(", ")})"
+    puts "assets are fresh (#{manifest.keys.size} entries: #{LOGICAL.keys.join(", ")} + #{vendored.size} fonts)"
   end
 end
 
 desc "Alias for assets:build"
 task assets: "assets:build"
 
-def build_css
+def build_css(fonts)
   require "tailwindcss/ruby"
 
   input = File.join(SRC, "input.css")
@@ -131,19 +144,46 @@ def build_css
   css = File.read(tmp)
   FileUtils.rm_f(tmp)
 
-  font_face_css + css
+  font_face_css(fonts) + css
 end
 
-def font_face_css
+# Copies every vendored woff2 into the output directory under a digested name
+# and returns its manifest fragment. Fonts are served as ordinary assets rather
+# than inlined as data: URIs: a browser then downloads only the family the user
+# actually reads the dashboard in, instead of all of them on first paint.
+def build_fonts
+  index_path = File.join(SRC, "fonts", "fonts.json")
+  return {} unless File.file?(index_path)
+
+  JSON.parse(File.read(index_path)).each_with_object({}) do |(logical, _meta), manifest|
+    content = File.binread(File.join(SRC, "fonts", logical))
+    digest = Digest::SHA256.hexdigest(content)
+    short = digest[0, 12]
+    file = "flightdeck-#{File.basename(logical, ".woff2")}-#{short}.woff2"
+
+    File.binwrite(File.join(OUT, file), content)
+    manifest[logical] = {
+      "file" => file,
+      "digest" => short,
+      "sha256" => digest,
+      "content_type" => "font/woff2",
+      "size" => content.bytesize
+    }
+  end
+end
+
+# The url() is relative, so it resolves against the stylesheet's own URL and
+# stays correct wherever the engine is mounted.
+def font_face_css(fonts)
   index_path = File.join(SRC, "fonts", "fonts.json")
   return "" unless File.file?(index_path)
 
-  JSON.parse(File.read(index_path)).map do |file, meta|
-    bytes = File.binread(File.join(SRC, "fonts", file))
-    data = Base64.strict_encode64(bytes)
+  JSON.parse(File.read(index_path)).map do |logical, meta|
+    file = fonts.fetch(logical).fetch("file")
+
     "@font-face{font-family:'#{meta["family"]}';font-style:normal;" \
       "font-weight:#{meta["weight"]};font-display:swap;" \
-      "src:url(data:font/woff2;base64,#{data}) format('woff2')}"
+      "src:url(#{file}) format('woff2')}"
   end.join + "\n"
 end
 
@@ -173,7 +213,7 @@ end
 
 def prune_stale(manifest)
   keep = manifest.values.map { |entry| entry["file"] } + [ "manifest.json" ]
-  Dir[File.join(OUT, "flightdeck-*.{css,js}")].each do |path|
+  Dir[File.join(OUT, "flightdeck-*.{css,js,woff2}")].each do |path|
     FileUtils.rm_f(path) unless keep.include?(File.basename(path))
   end
 end

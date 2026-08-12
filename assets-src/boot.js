@@ -6,6 +6,7 @@
 
   var application = Stimulus.Application.start()
   application.register("clock", ClockController)
+  application.register("font", FontController)
   application.register("live", LiveController)
   application.register("refresh", RefreshController)
   application.register("selection", SelectionController)

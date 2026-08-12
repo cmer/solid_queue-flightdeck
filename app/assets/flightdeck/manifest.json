@@ -1,16 +1,93 @@
 {
   "flightdeck.css": {
-    "file": "flightdeck-3967b9e6c506.css",
-    "digest": "3967b9e6c506",
-    "sha256": "3967b9e6c506b57edf0cde8de68e1138f3400e7901b7690bca660f1cfe27e219",
+    "file": "flightdeck-6f786a79a591.css",
+    "digest": "6f786a79a591",
+    "sha256": "6f786a79a591dcffffb20cff6b28c883f2b27931045037e7a181c47f9bbd386e",
     "content_type": "text/css; charset=utf-8",
-    "size": 118446
+    "size": 31519
   },
   "flightdeck.js": {
-    "file": "flightdeck-a2ee19eff88a.js",
-    "digest": "a2ee19eff88a",
-    "sha256": "a2ee19eff88a0bfeed8012445a31f68989e6bfa8210cc61fdb8180b73c62fa4e",
+    "file": "flightdeck-3b8705531e2d.js",
+    "digest": "3b8705531e2d",
+    "sha256": "3b8705531e2de17d260adb587cc758b1324881aeeab37a374fc9a33b96c55b38",
     "content_type": "text/javascript; charset=utf-8",
-    "size": 150889
+    "size": 153022
+  },
+  "barlow-400.woff2": {
+    "file": "flightdeck-barlow-400-7a686e763128.woff2",
+    "digest": "7a686e763128",
+    "sha256": "7a686e76312866b7d506c103e51a829d4c96a0b4576835128d3b7b53801c095a",
+    "content_type": "font/woff2",
+    "size": 15656
+  },
+  "barlow-500.woff2": {
+    "file": "flightdeck-barlow-500-80e7dc5605dd.woff2",
+    "digest": "80e7dc5605dd",
+    "sha256": "80e7dc5605dd451bb9b092d7f46704f08bf39d2866cb981aa8caddc016716aed",
+    "content_type": "font/woff2",
+    "size": 15640
+  },
+  "barlow-600.woff2": {
+    "file": "flightdeck-barlow-600-488b58098126.woff2",
+    "digest": "488b58098126",
+    "sha256": "488b58098126c00b8fa77f4d58b0a4bc982e81e4c83323c1a73d9f1a67c15971",
+    "content_type": "font/woff2",
+    "size": 15832
+  },
+  "general-sans-400.woff2": {
+    "file": "flightdeck-general-sans-400-3ec2be771caf.woff2",
+    "digest": "3ec2be771caf",
+    "sha256": "3ec2be771caf168b077ca05af4df1dace77088e2b3a27da570036e61be58a039",
+    "content_type": "font/woff2",
+    "size": 23084
+  },
+  "general-sans-500.woff2": {
+    "file": "flightdeck-general-sans-500-c30377df1de8.woff2",
+    "digest": "c30377df1de8",
+    "sha256": "c30377df1de8444d07161725c751f458beec07c28034df2fd275d1aa587a239f",
+    "content_type": "font/woff2",
+    "size": 22904
+  },
+  "general-sans-600.woff2": {
+    "file": "flightdeck-general-sans-600-94a2a0e1ef59.woff2",
+    "digest": "94a2a0e1ef59",
+    "sha256": "94a2a0e1ef59728eb65498ed7fe26e5af7e2858a3a4a278a89ac1f83a0544945",
+    "content_type": "font/woff2",
+    "size": 23092
+  },
+  "ibm-plex-mono-400.woff2": {
+    "file": "flightdeck-ibm-plex-mono-400-c36f509c0a8f.woff2",
+    "digest": "c36f509c0a8f",
+    "sha256": "c36f509c0a8f9f85f29cb44bc8701d8a9e0b14c499e77a884f789ead7093a7ac",
+    "content_type": "font/woff2",
+    "size": 10052
+  },
+  "ibm-plex-mono-500.woff2": {
+    "file": "flightdeck-ibm-plex-mono-500-a76f53ca6612.woff2",
+    "digest": "a76f53ca6612",
+    "sha256": "a76f53ca6612e7b3828eec2311098675b7f9849ae4169a8bcef6302aec02a6c0",
+    "content_type": "font/woff2",
+    "size": 10060
+  },
+  "inter-variable.woff2": {
+    "file": "flightdeck-inter-variable-c940764593d0.woff2",
+    "digest": "c940764593d0",
+    "sha256": "c940764593d0fe5d596be327ca7558855e018039fb78509aa21921fd3644c3e4",
+    "content_type": "font/woff2",
+    "size": 48432
+  },
+  "manrope-variable.woff2": {
+    "file": "flightdeck-manrope-variable-e310b55a7fd9.woff2",
+    "digest": "e310b55a7fd9",
+    "sha256": "e310b55a7fd9677f5e3555e6c6c4d064fa1f1d24393f0ddbe217cea12a8c432f",
+    "content_type": "font/woff2",
+    "size": 24576
+  },
+  "public-sans-variable.woff2": {
+    "file": "flightdeck-public-sans-variable-c1b6da516e00.woff2",
+    "digest": "c1b6da516e00",
+    "sha256": "c1b6da516e0062e9c2f341b3a51dd2d621d946da72f06c6cfe05fd9d2dd8622d",
+    "content_type": "font/woff2",
+    "size": 26636
   }
 }

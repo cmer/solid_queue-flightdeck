@@ -1,27 +1,68 @@
 {
-  "barlow-400-latin.woff2": {
+  "barlow-400.woff2": {
     "family": "Barlow",
-    "weight": 400,
+    "weight": "400",
+    "subset": "latin",
     "source": "https://fonts.gstatic.com/s/barlow/v13/7cHpv4kjgoGqM7E_DMs5ynghnQ.woff2"
   },
-  "barlow-500-latin.woff2": {
+  "barlow-500.woff2": {
     "family": "Barlow",
-    "weight": 500,
+    "weight": "500",
+    "subset": "latin",
     "source": "https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjgoGqM7E3_-gs51ostz0rdg.woff2"
   },
-  "barlow-600-latin.woff2": {
+  "barlow-600.woff2": {
     "family": "Barlow",
-    "weight": 600,
+    "weight": "600",
+    "subset": "latin",
     "source": "https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjgoGqM7E30-8s51ostz0rdg.woff2"
   },
-  "ibm-plex-mono-400-latin.woff2": {
+  "general-sans-400.woff2": {
+    "family": "General Sans",
+    "weight": "400",
+    "subset": "full",
+    "source": "//cdn.fontshare.com/wf/MFQT7HFGCR2L5ULQTW6YXYZXXHMPKLJ3/YWQ244D6TACUX5JBKATPOW5I5MGJ3G73/7YY3ZAAE3TRV2LANYOLXNHTPHLXVWTKH.woff2"
+  },
+  "general-sans-500.woff2": {
+    "family": "General Sans",
+    "weight": "500",
+    "subset": "full",
+    "source": "//cdn.fontshare.com/wf/3RZHWSNONLLWJK3RLPEKUZOMM56GO4LJ/BPDRY7AHVI3MCDXXVXTQQ76H3UXA63S3/SB2OEB6IKZPRR6JT4GFJ2TFT6HBB6AZN.woff2"
+  },
+  "general-sans-600.woff2": {
+    "family": "General Sans",
+    "weight": "600",
+    "subset": "full",
+    "source": "//cdn.fontshare.com/wf/K46YRH762FH3QJ25IQM3VAXAKCHEXXW4/ISLWQPUZHZF33LRIOTBMFOJL57GBGQ4B/3ZLMEXZEQPLTEPMHTQDAUXP5ZZXCZAEN.woff2"
+  },
+  "ibm-plex-mono-400.woff2": {
     "family": "IBM Plex Mono",
-    "weight": 400,
+    "weight": "400",
+    "subset": "latin",
     "source": "https://fonts.gstatic.com/s/ibmplexmono/v20/-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2"
   },
-  "ibm-plex-mono-500-latin.woff2": {
+  "ibm-plex-mono-500.woff2": {
     "family": "IBM Plex Mono",
-    "weight": 500,
+    "weight": "500",
+    "subset": "latin",
     "source": "https://fonts.gstatic.com/s/ibmplexmono/v20/-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2"
+  },
+  "inter-variable.woff2": {
+    "family": "Inter",
+    "weight": "400 600",
+    "subset": "latin",
+    "source": "https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2"
+  },
+  "manrope-variable.woff2": {
+    "family": "Manrope",
+    "weight": "400 600",
+    "subset": "latin",
+    "source": "https://fonts.gstatic.com/s/manrope/v20/xn7gYHE41ni1AdIRggexSvfedN4.woff2"
+  },
+  "public-sans-variable.woff2": {
+    "family": "Public Sans",
+    "weight": "400 600",
+    "subset": "latin",
+    "source": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
   }
 }

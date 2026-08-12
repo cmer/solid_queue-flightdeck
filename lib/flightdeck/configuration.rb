@@ -14,6 +14,8 @@ module Flightdeck
                   :display_timezone,
                   :backtrace_lines
 
+    attr_reader :ui_font
+
     def initialize
       @base_controller_class = nil
       @http_basic = nil
@@ -26,6 +28,20 @@ module Flightdeck
       @chart_cache_ttl = 30.seconds
       @display_timezone = "UTC"
       @backtrace_lines = 50
+      @ui_font = UiFonts::DEFAULT
+    end
+
+    # The house default every user starts on; each user can pick another in the
+    # UI. Validated on assignment so a typo surfaces in the host's initializer
+    # rather than as a silent fallback in the browser.
+    def ui_font=(value)
+      slug = value.to_s
+      unless UiFonts.valid?(slug)
+        raise ArgumentError,
+              "unknown Flightdeck ui_font #{value.inspect} — expected one of: #{UiFonts.slugs.join(", ")}"
+      end
+
+      @ui_font = slug
     end
 
     # Resolved fresh on every call so that credentials rotated in the

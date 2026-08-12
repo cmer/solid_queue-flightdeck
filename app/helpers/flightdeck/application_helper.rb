@@ -29,6 +29,17 @@ module Flightdeck
       asset_file_path(name: digested)
     end
 
+    # The host's configured typeface, stamped on <html> so the first paint is
+    # already correct. A user's own choice replaces it once the font controller
+    # connects.
+    def fd_ui_font
+      Flightdeck.config.ui_font
+    end
+
+    def fd_ui_font_options
+      Flightdeck::UiFonts.options
+    end
+
     # Sidebar counts are capped like every other count, and degrade to "—"
     # rather than taking the whole page down if the queue database is
     # unreachable.

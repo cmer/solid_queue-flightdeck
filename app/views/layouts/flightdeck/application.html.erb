@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-font="<%= fd_ui_font %>">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,7 +13,7 @@
       <script src="<%= js %>" defer></script>
     <% end %>
   </head>
-  <body data-controller="theme">
+  <body data-controller="theme font">
     <div class="fd-app">
       <aside class="fd-side">
         <div class="fd-brand">
@@ -58,8 +58,44 @@
         </nav>
 
         <div class="fd-side-foot">
-          <b>flightdeck</b><br>
-          v<%= Flightdeck::VERSION %>
+          <div>
+            <b>flightdeck</b><br>
+            v<%= Flightdeck::VERSION %>
+          </div>
+
+          <div class="fd-side-tools">
+            <%# Switching is a single attribute write on <html>, so the whole
+                dashboard re-renders in the picked face immediately. %>
+            <label class="fd-font-picker">
+              <span class="fd-visually-hidden">Interface font</span>
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+                   stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2.6 12.4 6.6 3.2h1.2l4 9.2M4.3 9.4h6.1"/>
+              </svg>
+              <select data-font-target="select" data-action="font#change" title="Interface font">
+                <% fd_ui_font_options.each do |slug, label| %>
+                  <option value="<%= slug %>" <%= "selected" if slug == fd_ui_font %>><%= label %></option>
+                <% end %>
+              </select>
+            </label>
+
+            <%# Which icon shows is decided by theme tokens, so it is correct on
+                first paint without waiting for JavaScript. The controller
+                refines the label to name the action once it connects. %>
+            <button class="fd-theme-toggle" type="button"
+                    data-action="theme#toggle" data-theme-target="button"
+                    aria-label="Switch theme" title="Switch theme">
+              <svg class="fd-icon-sun" width="15" height="15" viewBox="0 0 16 16" fill="none"
+                   stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true">
+                <circle cx="8" cy="8" r="3.1"/>
+                <path d="M8 1.2v1.6M8 13.2v1.6M14.8 8h-1.6M2.8 8H1.2M12.8 3.2l-1.1 1.1M4.3 11.7l-1.1 1.1M12.8 12.8l-1.1-1.1M4.3 4.3 3.2 3.2"/>
+              </svg>
+              <svg class="fd-icon-moon" width="15" height="15" viewBox="0 0 16 16" fill="none"
+                   stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true">
+                <path d="M13.4 9.8A5.9 5.9 0 0 1 6.2 2.6a5.9 5.9 0 1 0 7.2 7.2z"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -80,22 +116,6 @@
               <span data-live-target="label">LIVE · <%= fd_poll_seconds %>s</span>
             </button>
 
-            <%# Which icon shows is decided by theme tokens, so it is correct on
-                first paint without waiting for JavaScript. The controller
-                refines the label to name the action once it connects. %>
-            <button class="fd-theme-toggle" type="button"
-                    data-action="theme#toggle" data-theme-target="button"
-                    aria-label="Switch theme" title="Switch theme">
-              <svg class="fd-icon-sun" width="15" height="15" viewBox="0 0 16 16" fill="none"
-                   stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true">
-                <circle cx="8" cy="8" r="3.1"/>
-                <path d="M8 1.2v1.6M8 13.2v1.6M14.8 8h-1.6M2.8 8H1.2M12.8 3.2l-1.1 1.1M4.3 11.7l-1.1 1.1M12.8 12.8l-1.1-1.1M4.3 4.3 3.2 3.2"/>
-              </svg>
-              <svg class="fd-icon-moon" width="15" height="15" viewBox="0 0 16 16" fill="none"
-                   stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true">
-                <path d="M13.4 9.8A5.9 5.9 0 0 1 6.2 2.6a5.9 5.9 0 1 0 7.2 7.2z"/>
-              </svg>
-            </button>
           </div>
         </div>
 

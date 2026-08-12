@@ -6,6 +6,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- The interface font is now configurable: pick one at the bottom of the sidebar
+  (remembered per browser), or set the default for everyone with
+  `config.ui_font`. Public Sans (the new default), Barlow, General Sans, Inter,
+  Manrope, or the OS UI font.
+
+### Changed
+
+- Fonts are served as separate cached assets instead of being inlined in the
+  stylesheet, so a browser downloads only the face it renders in. The stylesheet
+  is 74% smaller (118KB → 31KB).
+
 ## [1.0.0] - 2026-08-11
 
 ### Changed

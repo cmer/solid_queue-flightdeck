@@ -133,6 +133,29 @@ the engine answers 401 behind your constraint.
 | `chart_cache_ttl` | `30.seconds` | How long chart series are cached. |
 | `display_timezone` | `"UTC"` | Timezone for displayed timestamps. Queries stay in UTC. |
 | `backtrace_lines` | `50` | Backtrace frames shown on job detail. |
+| `ui_font` | `"public-sans"` | Default interface typeface. Each user can pick another one in the sidebar. |
+
+## Interface font
+
+The bottom of the sidebar has a font picker, and the choice is remembered per
+browser. To set the default everyone starts on:
+
+```ruby
+Flightdeck.configure do |config|
+  config.ui_font = "inter"
+end
+```
+
+Available: `public-sans` (default), `barlow`, `general-sans`, `inter`,
+`manrope`, and `system` (whatever your OS uses for its own UI, no webfont
+downloaded). Anything else raises at boot rather than falling back silently.
+
+All faces ship with the gem — nothing is fetched from Google Fonts or any other
+CDN at runtime, so the dashboard works on an isolated network and leaks no
+requests to third parties. They are served as ordinary digest-named assets
+rather than inlined, so a browser only downloads the one face it is rendering
+in. The monospace face (IBM Plex Mono) is fixed: the job tables depend on its
+tabular figures.
 
 ## Chart history and job retention
 

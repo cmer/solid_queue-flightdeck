@@ -19,6 +19,25 @@ class Flightdeck::ConfigurationTest < ActiveSupport::TestCase
     assert_equal 30.seconds, @config.chart_cache_ttl
     assert_equal "UTC", @config.display_timezone
     assert_equal 50, @config.backtrace_lines
+    assert_equal "public-sans", @config.ui_font
+  end
+
+  test "ui_font accepts any offered face" do
+    Flightdeck::UiFonts.slugs.each do |slug|
+      @config.ui_font = slug.to_sym
+
+      assert_equal slug, @config.ui_font
+    end
+  end
+
+  # Silently falling back would leave the host wondering why its configured
+  # face never showed up.
+  test "ui_font rejects a face that is not offered" do
+    error = assert_raises(ArgumentError) { @config.ui_font = "comic-sans" }
+
+    assert_match "comic-sans", error.message
+    assert_match "public-sans", error.message
+    assert_equal "public-sans", @config.ui_font
   end
 
   test "Flightdeck.configure yields the singleton config" do
