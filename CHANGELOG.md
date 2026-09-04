@@ -20,6 +20,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Policy. The layout now renders `csp_meta_tag`, so the bundled Turbo can nonce
   the `<style>`/`<script>` it injects at runtime. No effect on hosts without a
   CSP configured.
+- The dashboard no longer relies on inline `style` attributes, so column widths
+  and the queue depth bars survive a strict Content Security Policy.
 
 ## [1.1.0] - 2026-08-12
 

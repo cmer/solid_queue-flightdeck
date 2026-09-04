@@ -12,7 +12,7 @@
   </td>
   <%# Inside a group the header already names the exception class, so the row
       shows only the message. %>
-  <td class="args" style="max-width:260px" title="<%= row.error_summary.to_s %>">
+  <td class="args fd-error-cell" title="<%= row.error_summary.to_s %>">
     <%= fd_error_cell(row.error_summary, grouped: group_key.present?) %>
   </td>
   <td><%= fd_queue_badge(row.queue_name) %></td>

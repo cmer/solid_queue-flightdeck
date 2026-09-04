@@ -720,6 +720,11 @@ table.fd-data .args {
   max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 table.fd-data .dim { color: var(--ink-3); font-size: 12px; }
+table.fd-data .args.fd-error-cell { max-width: 260px; }
+table.fd-data th.fd-col-select { width: 34px; }
+table.fd-data th.fd-col-actions { width: 90px; }
+table.fd-data th.fd-col-actions-md { width: 110px; }
+table.fd-data th.fd-col-actions-lg { width: 150px; }
 .fd-scroll-x { overflow-x: auto; }
 .fd-empty { padding: 28px 14px; text-align: center; color: var(--ink-3); font-size: 13px; }
 
@@ -995,8 +1000,9 @@ table.fd-data td.fd-indent { padding-left: 28px; }
 .fd-spark-line { fill: none; stroke: var(--s1); stroke-width: 1.5; }
 .fd-spark-area { fill: var(--s1); opacity: .14; stroke: none; }
 
-.fd-depth-bar { height: 4px; border-radius: 2px; background: var(--panel-3); overflow: hidden; min-width: 70px; }
-.fd-depth-bar i { display: block; height: 100%; border-radius: 2px; background: var(--accent); }
+.fd-depth-bar { display: block; width: 100%; height: 4px; min-width: 70px; border-radius: 2px; overflow: hidden; }
+.fd-depth-track { fill: var(--panel-3); }
+.fd-depth-fill { fill: var(--accent); }
 
 /* --------------------------------------------------------------------------
    Fleet strip
