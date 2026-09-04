@@ -88,7 +88,7 @@ class Flightdeck::DashboardSystemTest < ApplicationSystemTestCase
     create_finished_job(queue_name: "critical", finished_at: 10.minutes.ago)
 
     visit "/flightdeck"
-    assert_selector ".fd-tile", count: 6
+    assert_selector ".fd-tile", count: 7
 
     within("#fd-overview-queues") { click_link "View all" }
     assert_current_path "/flightdeck/queues"

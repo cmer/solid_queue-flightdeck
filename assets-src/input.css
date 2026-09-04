@@ -932,7 +932,7 @@ table.fd-data td.fd-indent { padding-left: 28px; }
    Overview: tiles
    -------------------------------------------------------------------------- */
 
-.fd-tiles { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 14px; }
+.fd-tiles { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-bottom: 14px; }
 .fd-tile { padding: 12px 14px; position: relative; min-width: 0; }
 .fd-tile .lbl {
   font: 500 10px/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase;
@@ -1008,8 +1008,10 @@ table.fd-data td.fd-indent { padding-left: 28px; }
   border-radius: 7px; background: var(--panel-2); font: 400 11px/1.5 var(--font-mono); color: var(--ink-2);
 }
 
+@media (max-width: 1320px) {
+  .fd-tiles { grid-template-columns: repeat(4, 1fr); }
+}
 @media (max-width: 1080px) {
-  .fd-tiles { grid-template-columns: repeat(3, 1fr); }
   .fd-grid-2, .fd-grid-2b { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {

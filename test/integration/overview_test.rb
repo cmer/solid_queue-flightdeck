@@ -15,7 +15,7 @@ class Flightdeck::OverviewTest < FlightdeckIntegrationTest
     get_fd "/flightdeck"
 
     assert_response :success
-    assert_select ".fd-tile", count: 6
+    assert_select ".fd-tile", count: 7
     assert_select "svg.fd-chart", count: 2
     assert_select "#fd-overview-queues .fd-empty"
     assert_select "#fd-overview-failures .fd-empty"
@@ -37,6 +37,7 @@ class Flightdeck::OverviewTest < FlightdeckIntegrationTest
     3.times { create_failed_job }
     4.times { create_ready_job(created_at: 90.seconds.ago) }
     2.times { create_scheduled_job(scheduled_at: 10.minutes.from_now) }
+    5.times { create_blocked_job }
     worker = create_worker(threads: 10)
     create_claimed_job(process: worker)
 
@@ -46,6 +47,7 @@ class Flightdeck::OverviewTest < FlightdeckIntegrationTest
     assert_select ".fd-tile", text: /Processed · 24h\s*12/
     assert_select ".fd-tile", text: /Failed · 24h\s*3/
     assert_select ".fd-tile", text: /Ready now\s*4/
+    assert_select ".fd-tile", text: /Blocked\s*5/
     assert_select ".fd-tile", text: /Scheduled\s*2/
     assert_select ".fd-tile", text: %r{In progress\s*1\s*/ 10 slots}
     assert_includes response.body, "10% utilization"
