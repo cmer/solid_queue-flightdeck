@@ -22,7 +22,8 @@ module Flightdeck
     end
 
     def tiles
-      [ processed_tile, failed_tile, ready_tile, scheduled_tile, in_progress_tile, oldest_ready_tile ]
+      [ processed_tile, failed_tile, ready_tile, blocked_tile, scheduled_tile, in_progress_tile,
+        oldest_ready_tile ]
     end
 
     def series(window: Metrics::Series::DEFAULT_WINDOW)
@@ -75,6 +76,7 @@ module Flightdeck
     end
 
     def ready_now = @ready_now ||= counted("ready") { SolidQueue::ReadyExecution.all }
+    def blocked = @blocked ||= counted("blocked") { SolidQueue::BlockedExecution.all }
     def scheduled = @scheduled ||= counted("scheduled") { SolidQueue::ScheduledExecution.all }
     def in_progress = @in_progress ||= counted("in_progress") { SolidQueue::ClaimedExecution.all }
 
@@ -166,6 +168,16 @@ module Flightdeck
 
       def ready_tile
         Tile.new(label: "Ready now", value: number(ready_now), detail: "waiting to be claimed", trend: :flat, good: true)
+      end
+
+      def blocked_tile
+        Tile.new(
+          label: "Blocked",
+          value: number(blocked),
+          detail: blocked.zero? ? "nothing blocked" : "held by concurrency limits",
+          trend: :flat,
+          good: true
+        )
       end
 
       def scheduled_tile

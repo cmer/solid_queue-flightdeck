@@ -10,7 +10,8 @@ module Flightdeck
   module Assets
     CONTENT_TYPES = {
       ".css" => "text/css; charset=utf-8",
-      ".js" => "text/javascript; charset=utf-8"
+      ".js" => "text/javascript; charset=utf-8",
+      ".woff2" => "font/woff2"
     }.freeze
 
     LOGICAL_NAMES = %w[flightdeck.css flightdeck.js].freeze

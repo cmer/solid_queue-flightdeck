@@ -3,6 +3,8 @@
 require "test_helper"
 
 class Flightdeck::AssetsTest < ActionDispatch::IntegrationTest
+  VENDORED_FONTS = Pathname.new(File.expand_path("../../assets-src/fonts/fonts.json", __dir__))
+
   test "serves a digested stylesheet as an immutable asset" do
     name = Flightdeck::Assets.digested_name("flightdeck.css")
     get "/flightdeck/assets/#{name}"
@@ -57,7 +59,8 @@ class Flightdeck::AssetsTest < ActionDispatch::IntegrationTest
   test "the committed manifest matches the committed files" do
     manifest = JSON.parse(Flightdeck::Assets.root.join("manifest.json").read)
 
-    assert_equal %w[flightdeck.css flightdeck.js].sort, manifest.keys.sort
+    assert_includes manifest.keys, "flightdeck.css"
+    assert_includes manifest.keys, "flightdeck.js"
 
     manifest.each do |logical, entry|
       path = Flightdeck::Assets.root.join(entry["file"])
@@ -73,11 +76,53 @@ class Flightdeck::AssetsTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "the bundle embeds the vendored fonts rather than fetching them" do
+  test "the stylesheet serves the vendored fonts itself rather than fetching them" do
+    css = Flightdeck::Assets.read(Flightdeck::Assets.digested_name("flightdeck.css"))
+    vendored = JSON.parse(VENDORED_FONTS.read)
+
+    assert_equal vendored.size, css.scan("@font-face").size
+    refute_includes css, "fonts.gstatic.com"
+    refute_includes css, "fontshare.com"
+  end
+
+  # Every face inlined as a data: URI would put all of them on the wire on
+  # first paint, for the one the reader actually sees.
+  test "font files are separate assets, not inlined in the stylesheet" do
     css = Flightdeck::Assets.read(Flightdeck::Assets.digested_name("flightdeck.css"))
 
-    assert_equal 5, css.scan("@font-face").size
-    assert_includes css, "data:font/woff2;base64,"
-    refute_includes css, "fonts.gstatic.com"
+    refute_includes css, "data:font/woff2;base64,"
+    assert_operator css.bytesize, :<, 60.kilobytes
+  end
+
+  test "the @font-face urls are relative, so they resolve under any mount path" do
+    css = Flightdeck::Assets.read(Flightdeck::Assets.digested_name("flightdeck.css"))
+    urls = css.scan(/src:url\(([^)]+)\)/).flatten
+
+    assert_predicate urls, :any?
+    urls.each do |url|
+      refute_match %r{\A(?:/|https?:)}, url, "#{url} is absolute and would break under a nested mount"
+      assert Flightdeck::Assets.find(url), "#{url} is not a manifest asset"
+    end
+  end
+
+  test "serves a digested font as an immutable asset" do
+    name = Flightdeck::Assets.digested_name("barlow-400.woff2")
+    get "/flightdeck/assets/#{name}"
+
+    assert_response :success
+    assert_equal "font/woff2", response.headers["Content-Type"]
+    assert_equal %w[immutable max-age=31536000 public], response.headers["Cache-Control"].split(", ").sort
+    assert_equal "nosniff", response.headers["X-Content-Type-Options"]
+    assert_equal "wOF2", response.body.byteslice(0, 4)
+  end
+
+  test "every vendored font is reachable" do
+    JSON.parse(VENDORED_FONTS.read).each_key do |logical|
+      name = Flightdeck::Assets.digested_name(logical)
+      assert name, "#{logical} is missing from the manifest — run `rake assets:build`"
+
+      get "/flightdeck/assets/#{name}"
+      assert_response :success, "#{logical} did not serve"
+    end
   end
 end

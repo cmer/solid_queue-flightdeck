@@ -6,12 +6,44 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- A "Blocked" tile on the Overview, so jobs held by a concurrency limit are part
+  of the backlog you can see at a glance.
+
 ### Fixed
 
+- HTTP Basic credentials set in Rails credentials are now read correctly. Rails
+  returns them as an `ActiveSupport::OrderedOptions`, which Flightdeck mistook
+  for a callable and resolved to nothing, leaving the dashboard unconfigured.
 - The dashboard no longer breaks under a strict, nonce-based Content Security
   Policy. The layout now renders `csp_meta_tag`, so the bundled Turbo can nonce
   the `<style>`/`<script>` it injects at runtime. No effect on hosts without a
   CSP configured.
+
+## [1.1.0] - 2026-08-12
+
+### Added
+
+- The interface font is now configurable: pick one at the bottom of the sidebar
+  (remembered per browser), or set the default for everyone with
+  `config.ui_font`. Public Sans (the new default), Barlow, General Sans, Inter,
+  Manrope, or the OS UI font.
+
+### Changed
+
+- Fonts are served as separate cached assets instead of being inlined in the
+  stylesheet, so a browser downloads only the face it renders in. The stylesheet
+  is 74% smaller (118KB → 31KB).
+
+## [1.0.0] - 2026-08-11
+
+### Changed
+
+- Flightdeck is now 1.0: no functional changes from 0.6.0, but the mount point,
+  `Flightdeck.configure` options and `base_controller_class` contract are now
+  stable and covered by semantic versioning.
+
 
 ## [0.6.0] - 2026-07-28
 
@@ -94,7 +126,9 @@ First release.
 - Assets are served only by exact match against the built manifest, so a request
   can never name a file that was not built.
 
-[Unreleased]: https://github.com/cmer/solid_queue-flightdeck/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/cmer/solid_queue-flightdeck/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/cmer/solid_queue-flightdeck/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/cmer/solid_queue-flightdeck/compare/v0.6.0...v1.0.0
 [0.6.0]: https://github.com/cmer/solid_queue-flightdeck/compare/v0.5.3...v0.6.0
 [0.5.3]: https://github.com/cmer/solid_queue-flightdeck/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/cmer/solid_queue-flightdeck/compare/v0.5.1...v0.5.2

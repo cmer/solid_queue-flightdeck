@@ -33,7 +33,7 @@ class Flightdeck::NestedMountTest < FlightdeckIntegrationTest
     get_fd MOUNT
 
     assert_response :success
-    assert_select ".fd-tile", count: 6
+    assert_select ".fd-tile", count: 7
     assert_no_bare_mount_urls response.body, "the overview"
   end
 
@@ -180,7 +180,7 @@ class Flightdeck::NestedMountTest < FlightdeckIntegrationTest
     get_fd RENAMED_MOUNT
 
     assert_response :success
-    assert_select ".fd-tile", count: 6
+    assert_select ".fd-tile", count: 7
     assert_includes response.body, %(<meta name="turbo-root" content="#{RENAMED_MOUNT}/">)
   end
 

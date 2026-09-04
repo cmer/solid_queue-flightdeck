@@ -6,6 +6,7 @@ require "active_support/core_ext/object/blank"
 require "active_support/core_ext/string/inflections"
 
 require "flightdeck/version"
+require "flightdeck/ui_fonts"
 require "flightdeck/configuration"
 require "flightdeck/assets"
 
