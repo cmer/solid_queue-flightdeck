@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-04
+
 ### Added
 
 - A "Blocked" tile on the Overview, so jobs held by a concurrency limit are shown.
@@ -120,7 +122,8 @@ First release.
 - Assets are served only by exact match against the built manifest, so a request
   can never name a file that was not built.
 
-[Unreleased]: https://github.com/cmer/solid_queue-flightdeck/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/cmer/solid_queue-flightdeck/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/cmer/solid_queue-flightdeck/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/cmer/solid_queue-flightdeck/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/cmer/solid_queue-flightdeck/compare/v0.6.0...v1.0.0
 [0.6.0]: https://github.com/cmer/solid_queue-flightdeck/compare/v0.5.3...v0.6.0
