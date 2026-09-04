@@ -16,6 +16,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - HTTP Basic credentials set in Rails credentials are now read correctly. Rails
   returns them as an `ActiveSupport::OrderedOptions`, which Flightdeck mistook
   for a callable and resolved to nothing, leaving the dashboard unconfigured.
+- The dashboard no longer breaks under a strict, nonce-based Content Security
+  Policy. The layout now renders `csp_meta_tag`, so the bundled Turbo can nonce
+  the `<style>`/`<script>` it injects at runtime. No effect on hosts without a
+  CSP configured.
 
 ## [1.1.0] - 2026-08-12
 
@@ -39,6 +43,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Flightdeck is now 1.0: no functional changes from 0.6.0, but the mount point,
   `Flightdeck.configure` options and `base_controller_class` contract are now
   stable and covered by semantic versioning.
+
 
 ## [0.6.0] - 2026-07-28
 

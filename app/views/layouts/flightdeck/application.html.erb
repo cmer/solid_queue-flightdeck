@@ -6,6 +6,10 @@
     <title><%= content_for?(:title) ? yield(:title) : "Flightdeck" %></title>
     <meta name="turbo-root" content="<%= root_path %>">
     <%= csrf_meta_tags %>
+    <%# The bundled Turbo reads this nonce and stamps it on the <style>/<script> it injects
+        at runtime, so the dashboard works under a strict (nonce-based) CSP. Renders nothing
+        when the host has no CSP configured. %>
+    <%= csp_meta_tag %>
     <% if (css = flightdeck_asset_path("flightdeck.css")) %>
       <link rel="stylesheet" href="<%= css %>">
     <% end %>
