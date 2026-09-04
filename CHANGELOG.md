@@ -8,20 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- A "Blocked" tile on the Overview, so jobs held by a concurrency limit are part
-  of the backlog you can see at a glance.
+- A "Blocked" tile on the Overview, so jobs held by a concurrency limit are shown.
 
 ### Fixed
 
-- HTTP Basic credentials set in Rails credentials are now read correctly. Rails
-  returns them as an `ActiveSupport::OrderedOptions`, which Flightdeck mistook
-  for a callable and resolved to nothing, leaving the dashboard unconfigured.
-- The dashboard no longer breaks under a strict, nonce-based Content Security
-  Policy. The layout now renders `csp_meta_tag`, so the bundled Turbo can nonce
-  the `<style>`/`<script>` it injects at runtime. No effect on hosts without a
-  CSP configured.
-- The dashboard no longer relies on inline `style` attributes, so column widths
-  and the queue depth bars survive a strict Content Security Policy.
+- HTTP Basic credentials set in Rails credentials are now read correctly.
+- Full support for nonce-based Content Security Policy.
 
 ## [1.1.0] - 2026-08-12
 
