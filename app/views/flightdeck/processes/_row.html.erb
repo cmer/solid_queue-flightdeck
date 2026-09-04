@@ -2,7 +2,7 @@
   <td class="cls<%= " fd-indent" if child %>">
     <%= "↳ " if child %><%= node.kind %>
   </td>
-  <td class="dim fd-mono" style="font-size:12px"><%= node.hostname.presence || "—" %></td>
+  <td class="dim fd-mono"><%= node.hostname.presence || "—" %></td>
   <td class="num"><%= node.pid %></td>
   <td class="dim"><%= node.config_summary.presence || "—" %></td>
   <td class="num">

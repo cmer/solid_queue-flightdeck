@@ -11,7 +11,7 @@
           <th class="num">Depth</th>
           <th class="num">Latency</th>
           <th>Last <%= Flightdeck::Metrics::Series::SPARKLINE_HOURS %>h</th>
-          <th style="width:90px"></th>
+          <th class="fd-col-actions"></th>
         </tr>
       </thead>
       <tbody>
@@ -28,9 +28,10 @@
               <td class="num dim"><%= queue.latency ? fd_duration(queue.latency) : "—" %></td>
               <td><%= render "flightdeck/metrics/sparkline", sparkline: overview.sparkline_for(queue.name) %></td>
               <td>
-                <div class="fd-depth-bar">
-                  <i style="width: <%= fd_depth_share(queue.depth, overview.max_queue_depth) %>%"></i>
-                </div>
+                <svg class="fd-depth-bar" viewBox="0 0 100 4" preserveAspectRatio="none" aria-hidden="true">
+                  <rect class="fd-depth-track" width="100" height="4"/>
+                  <rect class="fd-depth-fill" width="<%= fd_depth_share(queue.depth, overview.max_queue_depth) %>" height="4"/>
+                </svg>
               </td>
             </tr>
           <% end %>
