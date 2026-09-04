@@ -73,7 +73,11 @@ module Flightdeck
       def normalize(source)
         return nil if source.nil?
 
-        source = source.call if source.respond_to?(:call)
+        # Only genuine callables are invoked. `respond_to?(:call)` is not a safe
+        # test here: Rails credentials hand back an ActiveSupport::OrderedOptions,
+        # whose method_missing answers true for every name and returns nil for
+        # `call` — which used to swallow credential-configured auth entirely.
+        source = source.call if source.is_a?(Proc) || source.is_a?(Method)
         return nil if source.nil?
 
         username = fetch(source, :username)

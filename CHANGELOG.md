@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- HTTP Basic credentials set in Rails credentials are now read correctly. Rails
+  returns them as an `ActiveSupport::OrderedOptions`, which Flightdeck mistook
+  for a callable and resolved to nothing, leaving the dashboard unconfigured.
+
 ## [1.1.0] - 2026-08-12
 
 ### Added

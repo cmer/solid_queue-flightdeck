@@ -92,6 +92,27 @@ class Flightdeck::ConfigurationTest < ActiveSupport::TestCase
     end
   end
 
+  test "resolve_http_basic reads credentials returned as OrderedOptions" do
+    # This is what Rails actually hands back for a nested credentials key, and
+    # it claims to respond_to?(:call) for every name.
+    credentials = ActiveSupport::OrderedOptions.new
+    credentials.username = "cred"
+    credentials.password = "secret"
+
+    Rails.application.credentials.stub(:flightdeck, credentials) do
+      assert_equal({ username: "cred", password: "secret" }, @config.resolve_http_basic)
+    end
+  end
+
+  test "resolve_http_basic reads explicit http_basic given as OrderedOptions" do
+    @config.http_basic = ActiveSupport::OrderedOptions.new.tap do |options|
+      options.username = "a"
+      options.password = "b"
+    end
+
+    assert_equal({ username: "a", password: "b" }, @config.resolve_http_basic)
+  end
+
   test "base_controller_class defaults to ActionController::Base and constantizes when set" do
     # Load the controller while nothing is configured, so this test cannot
     # leave a half-defined constant behind for the rest of the suite.
