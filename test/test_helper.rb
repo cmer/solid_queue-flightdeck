@@ -11,6 +11,15 @@ require_relative "support/solid_queue_scenario"
 ActiveRecord::Schema.verbose = false
 load Rails.root.join("db", "schema.rb")
 
+# Schema is loaded after boot, so cached column lists (and Solid Queue's
+# Batch.migrated? memo) would otherwise describe the previous process's tables.
+SolidQueue::Job.reset_column_information
+if defined?(SolidQueue::Batch)
+  SolidQueue::Batch.reset_column_information
+  SolidQueue::Batch.remove_instance_variable(:@migrated) if SolidQueue::Batch.instance_variable_defined?(:@migrated)
+end
+SolidQueue::BatchExecution.reset_column_information if defined?(SolidQueue::BatchExecution)
+
 module Flightdeck
   module TestHelpers
     BASIC_ENV_KEYS = %w[FLIGHTDECK_USERNAME FLIGHTDECK_PASSWORD].freeze
@@ -50,6 +59,25 @@ module Flightdeck
 
     def basic_auth_header(username, password)
       ActionController::HttpAuthentication::Basic.encode_credentials(username, password)
+    end
+
+    def with_batches_unavailable
+      original = Flightdeck::BatchesQuery.method(:available?)
+      Flightdeck::BatchesQuery.define_singleton_method(:available?) { false }
+      yield
+    ensure
+      Flightdeck::BatchesQuery.define_singleton_method(:available?, original)
+    end
+
+    def capture_sql
+      statements = []
+      subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*, payload|
+        statements << payload[:sql] unless payload[:name] == "SCHEMA"
+      end
+      yield
+      statements
+    ensure
+      ActiveSupport::Notifications.unsubscribe(subscriber)
     end
   end
 end

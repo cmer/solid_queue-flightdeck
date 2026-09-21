@@ -1,0 +1,95 @@
+<% content_for :page_title, @batch.title %>
+
+<%= fd_refresh_frame "fd-batch", url: fd_current_batch_url(@batch) do %>
+  <div class="fd-jd-head">
+    <div class="t">
+      <h2><%= @batch.title %></h2>
+      <div class="sub">
+        batch #<%= number_with_delimiter(@batch.id) %>
+        <% if @batch.active_job_batch_id.present? %>· <%= @batch.active_job_batch_id %><% end %>
+      </div>
+    </div>
+    <%= fd_batch_state_pill(@batch.status) %>
+    <div class="actions">
+      <%= link_to "Back to batches", batches_path, class: "fd-btn" %>
+    </div>
+  </div>
+
+  <div class="fd-grid-jd">
+    <div class="fd-stack">
+      <div class="fd-card">
+        <div class="fd-card-hd">
+          <h3>Progress</h3>
+          <span class="sub"><%= fd_batch_progress_counts(@batch) %></span>
+        </div>
+        <div class="fd-card-bd fd-batch-progress-block">
+          <%= fd_batch_progress_bar(@batch) %>
+        </div>
+      </div>
+
+      <div class="fd-card">
+        <div class="fd-card-hd"><h3>Jobs</h3></div>
+        <div class="fd-scroll-x">
+          <table class="fd-data">
+            <thead>
+              <tr>
+                <th>Job</th>
+                <th>Queue</th>
+                <th>State</th>
+                <th class="num">Enqueued</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if @rows.empty? %>
+                <tr><td colspan="4"><div class="fd-empty">No jobs in this batch.</div></td></tr>
+              <% else %>
+                <% @rows.each do |row| %>
+                  <tr id="<%= dom_id_for_job(row.id) %>">
+                    <td class="cls">
+                      <%= link_to row.class_name, job_path(row.id) %>
+                      <div class="args"><%= fd_args_preview(row.args_preview) %></div>
+                    </td>
+                    <td><%= fd_queue_badge(row.queue_name) %></td>
+                    <td><%= fd_state_pill(row.state) %></td>
+                    <td class="num dim"><%= fd_time(row.enqueued_at) %></td>
+                  </tr>
+                <% end %>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+        <%= render "flightdeck/shared/pager", query: @jobs_query, noun: "job",
+                   newest_path: batch_path(@batch.id),
+                   older_path: batch_path(@batch.id, before_id: @jobs_query.next_cursor) %>
+      </div>
+    </div>
+
+    <div class="fd-stack">
+      <div class="fd-card">
+        <div class="fd-card-hd"><h3>Metadata</h3></div>
+        <div class="fd-meta-grid">
+          <div><div class="k">Enqueued</div><div class="v"><%= fd_full_time(@batch.enqueued_at || @batch.created_at) %></div></div>
+          <div><div class="k">Finished</div><div class="v"><%= @batch.finished_at ? fd_full_time(@batch.finished_at) : "—" %></div></div>
+          <div><div class="k">Total jobs</div><div class="v"><%= number_with_delimiter(@batch.total_jobs) %></div></div>
+          <div><div class="k">Failed</div><div class="v"><%= number_with_delimiter(@batch.failed_jobs) %></div></div>
+          <% if @batch.on_finish_class.present? %>
+            <div><div class="k">On finish</div><div class="v mono"><%= @batch.on_finish_class %></div></div>
+          <% end %>
+          <% if @batch.on_success_class.present? %>
+            <div><div class="k">On success</div><div class="v mono"><%= @batch.on_success_class %></div></div>
+          <% end %>
+          <% if @batch.on_failure_class.present? %>
+            <div><div class="k">On failure</div><div class="v mono"><%= @batch.on_failure_class %></div></div>
+          <% end %>
+        </div>
+      </div>
+
+      <% if @batch.metadata? %>
+        <div class="fd-card">
+          <div class="fd-card-hd"><h3>Attached metadata</h3></div>
+          <pre class="fd-code"><%= @batch.metadata_json %></pre>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

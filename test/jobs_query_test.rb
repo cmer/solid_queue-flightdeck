@@ -41,6 +41,23 @@ class Flightdeck::JobsQueryTest < ActiveSupport::TestCase
     assert_equal [ a.id ], composed.rows.map(&:id)
   end
 
+  test "filters by batch membership on ready and failed states" do
+    batch = create_batch(total_jobs: 2)
+    ready = create_ready_job(class_name: "AlphaJob")
+    failed = create_failed_job(class_name: "AlphaJob")
+    add_to_batch(batch, ready, pending: true)
+    add_to_batch(batch, failed)
+    create_ready_job(class_name: "BetaJob")
+    create_failed_job(class_name: "BetaJob")
+
+    ready_query = Flightdeck::JobsQuery.new(state: :ready, batch_id: batch.id)
+    failed_query = Flightdeck::JobsQuery.new(state: :failed, batch_id: batch.id)
+
+    assert_equal [ ready.id ], ready_query.rows.map(&:id)
+    assert_equal 1, ready_query.count
+    assert_equal [ failed.id ], failed_query.rows.map(&:id)
+  end
+
   test "filters compose on states whose execution table has no queue column" do
     a = create_failed_job(class_name: "AlphaJob", queue_name: "critical")
     create_failed_job(class_name: "AlphaJob", queue_name: "low")
@@ -175,16 +192,5 @@ class Flightdeck::JobsQueryTest < ActiveSupport::TestCase
   private
     def ids_for(state)
       Flightdeck::JobsQuery.new(state: state).rows.map(&:id)
-    end
-
-    def capture_sql
-      statements = []
-      subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*, payload|
-        statements << payload[:sql] unless payload[:name] == "SCHEMA"
-      end
-      yield
-      statements
-    ensure
-      ActiveSupport::Notifications.unsubscribe(subscriber)
     end
 end

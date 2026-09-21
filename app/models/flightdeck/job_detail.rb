@@ -32,6 +32,14 @@ module Flightdeck
       @process = load_process
     end
 
+    def batch
+      return @batch if defined?(@batch)
+
+      @batch = load_batch
+    end
+
+    def batched? = batch.present?
+
     def id = job.id
     def class_name = job.class_name
     def queue_name = job.queue_name
@@ -151,6 +159,16 @@ module Flightdeck
         return nil unless execution.respond_to?(:process_id) && execution.process_id
 
         SolidQueue::Process.find_by(id: execution.process_id)
+      end
+
+      def load_batch
+        return nil unless BatchesQuery.available?
+        return nil unless job.has_attribute?(:batch_id) && job.batch_id.present?
+
+        batch = SolidQueue::Batch.find_by(id: job.batch_id)
+        return nil unless batch
+
+        BatchRow.new(batch: batch, **BatchesQuery.progress_for([ batch ]).fetch(batch.id))
       end
   end
 end

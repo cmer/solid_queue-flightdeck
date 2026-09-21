@@ -43,6 +43,13 @@
             Failed <span class="fd-nav-count"><%= fd_nav_count(:failed) %></span>
           <% end %>
 
+          <% if Flightdeck::BatchesQuery.available? %>
+            <%= link_to batches_path, class: "fd-nav-link#{" on" if controller_name == "batches"}" do %>
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="2.5" width="5" height="4" rx="0.8"/><rect x="8" y="2.5" width="5" height="4" rx="0.8"/><rect x="2" y="8.5" width="5" height="4" rx="0.8"/><rect x="8" y="8.5" width="5" height="4" rx="0.8"/></svg>
+              Batches <span class="fd-nav-count"><%= fd_nav_batch_count %></span>
+            <% end %>
+          <% end %>
+
           <span class="fd-nav-section">Infrastructure</span>
 
           <%= link_to queues_path, class: "fd-nav-link#{" on" if controller_name == "queues"}" do %>

@@ -76,7 +76,7 @@ class Flightdeck::NestedMountTest < FlightdeckIntegrationTest
   test "every page under the nested mount keeps its links inside it" do
     seed_everything
 
-    %w[/ /jobs /jobs?state=failed /queues /processes /recurring_tasks].each do |path|
+    %w[/ /jobs /jobs?state=failed /batches /queues /processes /recurring_tasks].each do |path|
       get_fd "#{MOUNT}#{path}"
 
       assert_response :success, "#{MOUNT}#{path} did not render"
@@ -243,5 +243,6 @@ class Flightdeck::NestedMountTest < FlightdeckIntegrationTest
       task = create_recurring_task(key: "digest")
       record_recurring_run(task, run_at: 1.hour.ago)
       create_finished_job(queue_name: "critical", finished_at: 30.minutes.ago)
+      create_finished_batch(description: "Nightly import")
     end
 end

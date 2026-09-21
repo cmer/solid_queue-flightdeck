@@ -1,0 +1,25 @@
+<div class="fd-card">
+  <div class="fd-scroll-x">
+    <table class="fd-data">
+      <thead>
+        <tr>
+          <th>Batch</th>
+          <th>Status</th>
+          <th>Progress</th>
+          <th class="num">Enqueued</th>
+          <th class="num">Finished</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if rows.empty? %>
+          <tr><td colspan="5"><div class="fd-empty">No batches.</div></td></tr>
+        <% else %>
+          <%= render partial: "flightdeck/batches/row", collection: rows, as: :row %>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <%= render "flightdeck/shared/pager", query: query, noun: "batch",
+             newest_path: batches_path({ state: params[:state].presence }.compact),
+             older_path: batches_path({ state: params[:state].presence, before_id: query.next_cursor }.compact) %>
+</div>

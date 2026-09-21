@@ -78,7 +78,8 @@ module Flightdeck
         @list_filters ||= {
           class_name: params[:class_name].presence,
           queue_name: params[:queue_name].presence,
-          q: params[:q].presence
+          q: params[:q].presence,
+          batch_id: params[:batch_id].presence
         }.compact
       end
 

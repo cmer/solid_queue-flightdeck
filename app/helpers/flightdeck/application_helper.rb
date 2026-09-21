@@ -64,6 +64,15 @@ module Flightdeck
       nav_count("recurring") { SolidQueue::RecurringTask.count }
     end
 
+    def fd_nav_batch_count
+      return "—" unless Flightdeck::BatchesQuery.available?
+
+      query = Flightdeck::BatchesQuery.new
+      fd_count(query.count, capped: query.count_capped?)
+    rescue ActiveRecord::ActiveRecordError
+      "—"
+    end
+
     def fd_nav_any_dead_processes?
       nav_count("dead_processes") do
         SolidQueue::Process.where(last_heartbeat_at: ..SolidQueue.process_alive_threshold.ago).exists?

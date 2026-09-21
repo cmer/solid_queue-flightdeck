@@ -30,7 +30,10 @@ gem "solid_queue-flightdeck"
 ```
 
 No migrations, no asset configuration. Requires Ruby >= 3.1, Rails >= 7.1 and
-Solid Queue >= 1.0.
+Solid Queue >= 1.0. The Batches page appears when the host is on Solid Queue
+1.7+ **and** has run the optional batches migration (`bin/rails solid_queue:update`).
+Hosts on older Solid Queue, or that have not migrated yet, see the rest of the
+dashboard unchanged.
 
 ## Mounting
 
