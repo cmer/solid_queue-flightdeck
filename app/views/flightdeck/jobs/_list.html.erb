@@ -62,7 +62,9 @@
           </tbody>
         </table>
       </div>
-      <%= render "flightdeck/jobs/pager", query: query, noun: "failed job" %>
+      <%= render "flightdeck/shared/pager", query: query, noun: "failed job",
+                 newest_path: fd_jobs_list_path,
+                 older_path: fd_jobs_list_path(before_id: query.next_cursor) %>
     </div>
   <% end %>
 <% else %>
@@ -89,6 +91,8 @@
         </tbody>
       </table>
     </div>
-    <%= render "flightdeck/jobs/pager", query: query, noun: "job" %>
+    <%= render "flightdeck/shared/pager", query: query, noun: "job",
+               newest_path: fd_jobs_list_path,
+               older_path: fd_jobs_list_path(before_id: query.next_cursor) %>
   </div>
 <% end %>

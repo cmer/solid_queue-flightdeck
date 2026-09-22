@@ -46,10 +46,11 @@ class FlightdeckSeeder
     seed_history
     seed_backlog
     seed_recurring
+    seed_batches
 
     puts "Seeded: #{SolidQueue::Job.count} jobs, #{SolidQueue::FailedExecution.count} failed, " \
          "#{SolidQueue::ReadyExecution.count} ready, #{SolidQueue::Process.count} processes, " \
-         "#{SolidQueue::RecurringTask.count} recurring tasks."
+         "#{SolidQueue::RecurringTask.count} recurring tasks, #{SolidQueue::Batch.count} batches."
   end
 
   private
@@ -135,6 +136,22 @@ class FlightdeckSeeder
         task = create_recurring_task(key: key, schedule: schedule, class_name: class_name)
         record_recurring_run(task, run_at: rand(1..90).minutes.ago, failed: key == "reconcile_payments")
       end
+    end
+
+    def seed_batches
+      running = create_batch(description: "Nightly billing sweep", total_jobs: 8,
+                             enqueued_at: 12.minutes.ago, metadata: { "user_id" => 42 },
+                             on_finish: { "job_class" => "NotifyBillingFinishedJob" })
+      4.times do
+        add_to_batch(running, create_ready_job(class_name: "Billing::ChargeSubscriptionJob", queue_name: "critical"),
+                     pending: true)
+      end
+      2.times { add_to_batch(running, create_finished_job(class_name: "Billing::ChargeSubscriptionJob", queue_name: "critical")) }
+      2.times { add_to_batch(running, create_failed_job(class_name: "Billing::ChargeSubscriptionJob", queue_name: "critical")) }
+
+      create_finished_batch(description: "Image variants", job_count: 5,
+                            metadata: { "source" => "uploads" })
+      create_failed_batch(description: "Webhook replay")
     end
 end
 

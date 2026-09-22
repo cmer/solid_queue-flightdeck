@@ -3,6 +3,8 @@
 Flightdeck::Engine.routes.draw do
   root to: "overview#index"
 
+  resources :batches, only: %i[index show]
+
   resources :jobs, only: %i[index show] do
     member do
       post :retry, to: "jobs/retries#create"

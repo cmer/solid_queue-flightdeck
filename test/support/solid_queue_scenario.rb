@@ -16,6 +16,12 @@ module SolidQueueScenario
   }.freeze
 
   def clear_solid_queue!
+    if defined?(SolidQueue::BatchExecution) && SolidQueue::BatchExecution.table_exists?
+      SolidQueue::BatchExecution.delete_all
+    end
+    if defined?(SolidQueue::Batch) && SolidQueue::Batch.table_exists?
+      SolidQueue::Batch.delete_all
+    end
     SolidQueue::ClaimedExecution.delete_all
     SolidQueue::ReadyExecution.delete_all
     SolidQueue::ScheduledExecution.delete_all
@@ -196,6 +202,63 @@ module SolidQueueScenario
       metadata: metadata,
       last_heartbeat_at: last_heartbeat_at
     )
+  end
+
+  # --- batches --------------------------------------------------------------
+
+  def create_batch(description: "Nightly import", total_jobs: 0, completed_jobs: 0, failed_jobs: 0,
+                   enqueued_at: Time.current, finished_at: nil, failed_at: nil,
+                   metadata: nil, on_finish: nil, on_success: nil, on_failure: nil,
+                   created_at: Time.current)
+    attrs = {
+      active_job_batch_id: SecureRandom.uuid,
+      description: description,
+      total_jobs: total_jobs,
+      completed_jobs: completed_jobs,
+      failed_jobs: failed_jobs,
+      enqueued_at: enqueued_at,
+      finished_at: finished_at,
+      failed_at: failed_at,
+      created_at: created_at,
+      updated_at: created_at
+    }
+    attrs[:metadata] = metadata if metadata
+    attrs[:on_finish] = on_finish if on_finish
+    attrs[:on_success] = on_success if on_success
+    attrs[:on_failure] = on_failure if on_failure
+
+    SolidQueue::Batch.insert_all!([ attrs ])
+    SolidQueue::Batch.order(id: :desc).first
+  end
+
+  # Membership is the jobs.batch_id column. A pending tracking row is only
+  # present while the job is still outstanding — finished and failed jobs
+  # drop theirs, matching Solid Queue.
+  def add_to_batch(batch, job, pending: false)
+    SolidQueue::Job.where(id: job.id).update_all(batch_id: batch.id)
+    if pending
+      SolidQueue::BatchExecution.insert_all!([
+        { job_id: job.id, batch_id: batch.id, created_at: Time.current }
+      ])
+    end
+    job
+  end
+
+  def create_finished_batch(description: "Completed import", job_count: 2, **attributes)
+    batch = create_batch(description: description, total_jobs: job_count,
+                         completed_jobs: job_count, failed_jobs: 0,
+                         enqueued_at: 1.hour.ago, finished_at: 50.minutes.ago, **attributes)
+    job_count.times { add_to_batch(batch, create_finished_job(class_name: "ImportRowJob")) }
+    batch
+  end
+
+  def create_failed_batch(description: "Failed import", **attributes)
+    batch = create_batch(description: description, total_jobs: 2, completed_jobs: 1, failed_jobs: 1,
+                         enqueued_at: 1.hour.ago, finished_at: 50.minutes.ago,
+                         failed_at: 50.minutes.ago, **attributes)
+    add_to_batch(batch, create_finished_job(class_name: "ImportRowJob"))
+    add_to_batch(batch, create_failed_job(class_name: "ImportRowJob"))
+    batch
   end
 
   # One job in every state, keyed by state name.

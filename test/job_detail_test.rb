@@ -92,6 +92,25 @@ class Flightdeck::JobDetailTest < ActiveSupport::TestCase
     assert_includes detail.timeline.map(&:label), "Finished"
   end
 
+  test "a job that belongs to a batch exposes the batch on the detail object" do
+    batch = create_batch(description: "Nightly import", total_jobs: 1)
+    job = create_ready_job
+    add_to_batch(batch, job, pending: true)
+
+    detail = Flightdeck::JobDetail.find(job.id)
+
+    assert detail.batched?
+    assert_equal batch.id, detail.batch.id
+    assert_equal "Nightly import", detail.batch.title
+    assert_equal :enqueued, detail.batch.status
+  end
+
+  test "a job with no batch is not batched" do
+    job = create_ready_job
+
+    refute Flightdeck::JobDetail.find(job.id).batched?
+  end
+
   test "an in-progress job names the process that claimed it" do
     process = create_process(name: "jobs-01", pid: 4172)
     job = create_claimed_job(process: process)

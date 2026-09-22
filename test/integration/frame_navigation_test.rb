@@ -64,11 +64,40 @@ class Flightdeck::FrameNavigationTest < FlightdeckIntegrationTest
     assert_select "turbo-frame#fd-jobs td.cls a[data-turbo-frame=_top]", 1
   end
 
+  test "the batches frame keeps pagination in-frame" do
+    30.times { |i| create_batch(description: "Batch #{i}") }
+    Flightdeck.config.per_page = 5
+
+    get_fd "/flightdeck/batches"
+
+    assert_select "turbo-frame#fd-batches[target=_top]", 0,
+                  "pagination must stay inside the batches frame"
+    assert_select "turbo-frame#fd-batches a[href*='before_id']", minimum: 1
+  ensure
+    Flightdeck.config.per_page = 25
+  end
+
+  test "batch links inside the batches frame escape it" do
+    create_batch(description: "Nightly import")
+
+    get_fd "/flightdeck/batches"
+
+    assert_select "turbo-frame#fd-batches td.cls a[data-turbo-frame=_top]", 1
+  end
+
+  test "the batch show frame lets its links escape" do
+    batch = create_finished_batch(description: "Nightly import")
+
+    get_fd "/flightdeck/batches/#{batch.id}"
+
+    assert_select "turbo-frame#fd-batch[target=_top]", 1
+  end
+
   # The actual failure mode: a link's destination has no frame with its id.
   test "no link inside a frame points at a page that lacks that frame" do
     seed_everything
 
-    ([ "/flightdeck/jobs", "/flightdeck/jobs?state=failed" ] + TOP_LEVEL_FRAMES.keys).each do |path|
+    ([ "/flightdeck/jobs", "/flightdeck/jobs?state=failed", "/flightdeck/batches" ] + TOP_LEVEL_FRAMES.keys).each do |path|
       get_fd path
       document = Nokogiri::HTML(response.body)
 
@@ -99,5 +128,6 @@ class Flightdeck::FrameNavigationTest < FlightdeckIntegrationTest
       task = create_recurring_task(key: "digest")
       record_recurring_run(task, run_at: 1.hour.ago)
       create_finished_job(queue_name: "critical", finished_at: 30.minutes.ago)
+      create_finished_batch(description: "Nightly import")
     end
 end

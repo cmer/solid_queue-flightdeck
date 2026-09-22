@@ -49,6 +49,24 @@
       </div>
     <% end %>
 
+    <% if @job.batched? %>
+      <div class="fd-card">
+        <div class="fd-card-hd">
+          <h3>Part of</h3>
+          <%= fd_batch_state_pill(@job.batch.status) %>
+        </div>
+        <div class="fd-part-of">
+          <div class="grow">
+            <%= link_to @job.batch.title, batch_path(@job.batch.id) %>
+            <div class="fd-batch-counts"><%= fd_batch_progress_counts(@job.batch) %></div>
+          </div>
+          <div class="fd-batch-progress-mini">
+            <%= fd_batch_progress_bar(@job.batch) %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
     <div class="fd-card">
       <div class="fd-card-hd">
         <h3>Arguments</h3>

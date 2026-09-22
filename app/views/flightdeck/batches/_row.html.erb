@@ -1,0 +1,15 @@
+<tr id="<%= dom_id_for_batch(row.id) %>">
+  <td class="cls">
+    <%= link_to row.title, batch_path(row.id), data: { turbo_frame: "_top" } %>
+    <div class="args"><%= number_with_delimiter(row.total_jobs) %> <%= "job".pluralize(row.total_jobs) %></div>
+  </td>
+  <td><%= fd_batch_state_pill(row.status) %></td>
+  <td>
+    <div class="fd-batch-progress">
+      <%= fd_batch_progress_bar(row) %>
+      <div class="fd-batch-counts"><%= fd_batch_progress_counts(row) %></div>
+    </div>
+  </td>
+  <td class="num dim"><%= fd_time(row.enqueued_at || row.created_at) %></td>
+  <td class="num dim"><%= row.finished_at ? fd_time(row.finished_at) : "—" %></td>
+</tr>

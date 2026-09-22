@@ -1,10 +1,10 @@
 {
   "flightdeck.css": {
-    "file": "flightdeck-38ba36531cee.css",
-    "digest": "38ba36531cee",
-    "sha256": "38ba36531cee83452b312ce04f858f83eeb262b498b6614c775e1947ba2303da",
+    "file": "flightdeck-f31d22011660.css",
+    "digest": "f31d22011660",
+    "sha256": "f31d22011660f83a4b07b3ee983ecc0380d0bc448b0e85c72f2e4e910260f950",
     "content_type": "text/css; charset=utf-8",
-    "size": 31759
+    "size": 32428
   },
   "flightdeck.js": {
     "file": "flightdeck-30004819780c.js",

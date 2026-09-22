@@ -1,0 +1,18 @@
+<div class="fd-pager">
+  <span>
+    <%= fd_count(query.count, capped: query.count_capped?) %> <%= noun.pluralize(query.count) %><% if query.count_capped? %> · counts capped at <%= number_with_delimiter(query.count_cap) %><% end %>
+  </span>
+  <div class="right">
+    <% if params[:before_id].present? %>
+      <%= link_to "‹ Newest", newest_path, class: "fd-btn sm" %>
+    <% else %>
+      <span class="fd-btn sm disabled" aria-disabled="true">‹ Newest</span>
+    <% end %>
+
+    <% if query.next_page? %>
+      <%= link_to "Older ›", older_path, class: "fd-btn sm" %>
+    <% else %>
+      <span class="fd-btn sm disabled" aria-disabled="true">Older ›</span>
+    <% end %>
+  </div>
+</div>

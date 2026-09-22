@@ -1,0 +1,16 @@
+<% content_for :page_title, "Batches" %>
+
+<div class="fd-statetabs">
+  <% Flightdeck::BatchesQuery::STATES.each do |state| %>
+    <% counts = @state_counts[state] %>
+    <%= link_to batches_path({ state: (state == :all ? nil : state) }.compact),
+                class: ("on" if @query.state == state) do %>
+      <%= fd_batch_state_label(state) %>
+      <span class="ct"><%= fd_count(counts[:count], capped: counts[:capped]) %></span>
+    <% end %>
+  <% end %>
+</div>
+
+<%= fd_refresh_frame "fd-batches", url: fd_current_batches_url, target: nil do %>
+  <%= render "flightdeck/batches/list", query: @query, rows: @rows %>
+<% end %>

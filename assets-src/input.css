@@ -1004,6 +1004,20 @@ table.fd-data td.fd-indent { padding-left: 28px; }
 .fd-depth-track { fill: var(--panel-3); }
 .fd-depth-fill { fill: var(--accent); }
 
+.fd-batch-bar { display: block; width: 100%; height: 6px; min-width: 80px; border-radius: 3px; overflow: hidden; }
+.fd-batch-fill-ok { fill: var(--good); }
+.fd-batch-fill-bad { fill: var(--crit); }
+.fd-batch-progress { display: flex; flex-direction: column; gap: 6px; min-width: 140px; }
+.fd-batch-progress-mini { width: 160px; flex-shrink: 0; }
+.fd-batch-progress-block { padding: 12px 14px 14px; }
+.fd-batch-counts { font: 400 11.5px/1.5 var(--font-mono); color: var(--ink-3); }
+.fd-part-of {
+  display: flex; align-items: center; gap: 16px; padding: 12px 14px;
+}
+.fd-part-of .grow { flex: 1; min-width: 0; }
+.fd-part-of .grow a { font-weight: 500; text-decoration: none; color: var(--ink); }
+.fd-part-of .grow a:hover { color: var(--accent-ink); }
+
 /* --------------------------------------------------------------------------
    Fleet strip
    -------------------------------------------------------------------------- */

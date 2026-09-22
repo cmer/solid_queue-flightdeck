@@ -6,6 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- A Batches page (and a "Part of" card on job detail) when Solid Queue 1.7+ is installed and the optional batches migration has run.
+
+### Fixed
+
+- A list of one job says "1 job" (and "1 failed job") instead of the plural.
+
 ## [1.2.0] - 2026-09-04
 
 ### Added

@@ -25,14 +25,15 @@ module Flightdeck
 
     class InvalidState < ArgumentError; end
 
-    attr_reader :state, :class_name, :queue_name, :q, :before_id, :limit, :count_cap
+    attr_reader :state, :class_name, :queue_name, :q, :batch_id, :before_id, :limit, :count_cap
 
-    def initialize(state: :all, class_name: nil, queue_name: nil, q: nil, before_id: nil,
-                   limit: nil, count_cap: nil)
+    def initialize(state: :all, class_name: nil, queue_name: nil, q: nil, batch_id: nil,
+                   before_id: nil, limit: nil, count_cap: nil)
       @state = normalize_state(state)
       @class_name = class_name.presence
       @queue_name = queue_name.presence
       @q = q.presence
+      @batch_id = batch_id.presence && Integer(batch_id, exception: false)
       @before_id = before_id.presence && Integer(before_id, exception: false)
       @limit = (limit || Flightdeck.config.per_page).to_i.clamp(1, 200)
       @count_cap = (count_cap || Flightdeck.config.count_cap).to_i
@@ -66,7 +67,7 @@ module Flightdeck
     def count_capped? = count >= count_cap
 
     def filters?
-      class_name.present? || queue_name.present? || q.present?
+      class_name.present? || queue_name.present? || q.present? || batch_id.present?
     end
 
     # The filtered relation with no ordering, limit or cursor — what bulk
@@ -97,7 +98,7 @@ module Flightdeck
       # Only the filters change what a count means — the cursor and page size do
       # not, so they are deliberately absent from the key.
       def cache_filters
-        { class_name: class_name, queue_name: queue_name, q: q }
+        { class_name: class_name, queue_name: queue_name, q: q, batch_id: batch_id }
       end
 
       def normalize_state(value)
@@ -206,6 +207,7 @@ module Flightdeck
         relation = relation.where(jobs_table[:class_name].eq(class_name)) if class_name
         relation = relation.where(queue_table[:queue_name].eq(queue_name)) if queue_name
         relation = relation.where(jobs_table[:class_name].matches("#{escape_like(q)}%", nil, true)) if q
+        relation = relation.where(jobs_table[:batch_id].eq(batch_id)) if batch_id && batch_column?
 
         relation
       end
@@ -213,7 +215,12 @@ module Flightdeck
       def join_jobs?
         return false unless execution_backed?
 
-        class_name.present? || q.present? || (queue_name.present? && !own_queue_column?)
+        class_name.present? || q.present? || (batch_id.present? && batch_column?) ||
+          (queue_name.present? && !own_queue_column?)
+      end
+
+      def batch_column?
+        SolidQueue::Job.column_names.include?("batch_id")
       end
 
       def own_queue_column?

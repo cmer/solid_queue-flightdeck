@@ -29,9 +29,9 @@ class Flightdeck::CspInlineStylesTest < FlightdeckIntegrationTest
 
   private
     def dashboard_paths
-      paths = %w[/flightdeck /flightdeck/queues /flightdeck/processes /flightdeck/recurring_tasks]
+      paths = %w[/flightdeck /flightdeck/queues /flightdeck/processes /flightdeck/recurring_tasks /flightdeck/batches]
       paths += Flightdeck::JobsQuery::STATES.map { |state| "/flightdeck/jobs?state=#{state}" }
-      paths + @job_paths
+      paths + @job_paths + @batch_paths
     end
 
     def assert_no_inline_styles(path)
@@ -57,5 +57,11 @@ class Flightdeck::CspInlineStylesTest < FlightdeckIntegrationTest
         "/flightdeck/jobs/#{scenario[:failed].id}?state=failed",
         "/flightdeck/jobs/#{scenario[:ready].id}"
       ]
+
+      batch = create_batch(description: "Nightly import", total_jobs: 1)
+      batched = create_ready_job(class_name: "ImportRowJob")
+      add_to_batch(batch, batched, pending: true)
+      @job_paths << "/flightdeck/jobs/#{batched.id}"
+      @batch_paths = [ "/flightdeck/batches/#{batch.id}" ]
     end
 end
