@@ -8,7 +8,7 @@ module Flightdeck
     before_action :require_batches!
 
     def index
-      @query = BatchesQuery.new(state: state_param, before_id: params[:before_id])
+      @query = BatchesQuery.new(state: params[:state], before_id: params[:before_id])
       @rows = @query.rows
       @state_counts = BatchesQuery.state_counts
     end
@@ -24,13 +24,6 @@ module Flightdeck
         return if BatchesQuery.available?
 
         redirect_to root_path, alert: "Batches are not available on this Solid Queue installation."
-      end
-
-      def state_param
-        value = params[:state].presence&.to_sym || :all
-        raise BatchesQuery::InvalidState, "unknown batch state #{params[:state].inspect}" unless BatchesQuery::STATES.include?(value)
-
-        value
       end
 
       def unknown_state

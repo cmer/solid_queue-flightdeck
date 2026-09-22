@@ -126,6 +126,22 @@ class Flightdeck::BatchesTest < FlightdeckIntegrationTest
     assert_select "a[href=?]", "/flightdeck/jobs/#{ready.id}"
   end
 
+  test "a batch with unreadable callback JSON still renders" do
+    batch = create_batch(
+      description: "Nightly billing sweep",
+      on_success: { "job_class" => "NotifyBillingSucceededJob" }
+    )
+    SolidQueue::Batch.where(id: batch.id).update_all("on_finish = '{'")
+
+    get_fd "/flightdeck/batches/#{batch.id}"
+
+    assert_response :success
+    assert_select ".fd-jd-head h2", text: "Nightly billing sweep"
+    assert_select ".k", text: "On finish", count: 0
+    assert_select ".k", text: "On success"
+    assert_includes response.body, "NotifyBillingSucceededJob"
+  end
+
   test "a missing batch redirects to the list" do
     get_fd "/flightdeck/batches/999999"
 

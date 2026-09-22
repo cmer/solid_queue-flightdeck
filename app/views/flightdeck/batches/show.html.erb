@@ -72,14 +72,8 @@
           <div><div class="k">Finished</div><div class="v"><%= @batch.finished_at ? fd_full_time(@batch.finished_at) : "—" %></div></div>
           <div><div class="k">Total jobs</div><div class="v"><%= number_with_delimiter(@batch.total_jobs) %></div></div>
           <div><div class="k">Failed</div><div class="v"><%= number_with_delimiter(@batch.failed_jobs) %></div></div>
-          <% if @batch.on_finish_class.present? %>
-            <div><div class="k">On finish</div><div class="v mono"><%= @batch.on_finish_class %></div></div>
-          <% end %>
-          <% if @batch.on_success_class.present? %>
-            <div><div class="k">On success</div><div class="v mono"><%= @batch.on_success_class %></div></div>
-          <% end %>
-          <% if @batch.on_failure_class.present? %>
-            <div><div class="k">On failure</div><div class="v mono"><%= @batch.on_failure_class %></div></div>
+          <% @batch.callbacks.each do |label, job_class| %>
+            <div><div class="k"><%= label %></div><div class="v mono"><%= job_class %></div></div>
           <% end %>
         </div>
       </div>

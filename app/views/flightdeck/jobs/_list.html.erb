@@ -63,8 +63,8 @@
         </table>
       </div>
       <%= render "flightdeck/shared/pager", query: query, noun: "failed job",
-                 newest_path: jobs_path(list_filters.merge(state: params[:state].presence).compact),
-                 older_path: jobs_path(list_filters.merge(state: params[:state].presence, before_id: query.next_cursor).compact) %>
+                 newest_path: fd_jobs_list_path,
+                 older_path: fd_jobs_list_path(before_id: query.next_cursor) %>
     </div>
   <% end %>
 <% else %>
@@ -92,7 +92,7 @@
       </table>
     </div>
     <%= render "flightdeck/shared/pager", query: query, noun: "job",
-               newest_path: jobs_path(list_filters.merge(state: params[:state].presence).compact),
-               older_path: jobs_path(list_filters.merge(state: params[:state].presence, before_id: query.next_cursor).compact) %>
+               newest_path: fd_jobs_list_path,
+               older_path: fd_jobs_list_path(before_id: query.next_cursor) %>
   </div>
 <% end %>

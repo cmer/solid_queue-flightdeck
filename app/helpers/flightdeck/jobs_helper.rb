@@ -99,6 +99,10 @@ module Flightdeck
       jobs_path(request.query_parameters)
     end
 
+    def fd_jobs_list_path(**extra)
+      jobs_path(list_filters.merge(state: params[:state].presence, **extra).compact)
+    end
+
     def dom_id_for_job(id) = "fd-job-#{id}"
 
     # Under an exception-class group header, repeating the class on every row is
