@@ -55,14 +55,6 @@ class Flightdeck::DashboardTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "fd-nav-link on"
   end
 
-  test "the engine has its own session cookie regardless of the host" do
-    get_authenticated "/flightdeck"
-
-    assert response.headers["Set-Cookie"].to_s.include?("_flightdeck_session"),
-           "expected the engine-local CookieStore to set _flightdeck_session, got: " \
-           "#{response.headers["Set-Cookie"].inspect}"
-  end
-
   test "flash and session are usable inside the engine even when the host is API-only" do
     get_authenticated "/flightdeck"
 

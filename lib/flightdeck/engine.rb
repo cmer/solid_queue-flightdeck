@@ -4,6 +4,7 @@ require "rails"
 require "action_controller/railtie"
 require "action_view/railtie"
 require "solid_queue"
+require "flightdeck/session_fallback"
 
 module Flightdeck
   class Engine < ::Rails::Engine
@@ -11,9 +12,9 @@ module Flightdeck
 
     # Engine-local middleware: wraps only requests routed into the mount, so
     # Flightdeck has cookies, a session and flash even when the host app is
-    # `config.api_only = true` and carries none of them.
-    middleware.use ActionDispatch::Cookies
-    middleware.use ActionDispatch::Session::CookieStore,
+    # `config.api_only = true` and carries none of them. A host that has its
+    # own session keeps it: SessionFallback steps aside rather than copying it.
+    middleware.use Flightdeck::SessionFallback,
                    key: "_flightdeck_session",
                    same_site: :lax,
                    httponly: true

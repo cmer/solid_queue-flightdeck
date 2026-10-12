@@ -6,6 +6,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Security
+
+- Hosts with their own session no longer have it copied into a separate `_flightdeck_session` cookie; Flightdeck now uses the host session directly and only brings its own for API-only hosts.
+
 ## [1.2.0] - 2026-09-04
 
 ### Added
