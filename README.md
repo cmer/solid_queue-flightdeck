@@ -179,8 +179,9 @@ Failed jobs are unaffected: Solid Queue never purges them automatically.
 
 Works unchanged. Flightdeck carries its own cookies, session
 (`_flightdeck_session`) and flash as engine-local middleware wrapping only its
-own routes — your middleware stack is untouched. The whole suite runs a second
-time in API-only mode.
+own routes — your middleware stack is untouched. In an app that already has a
+session, Flightdeck uses yours and sets no cookie of its own. The whole suite
+runs a second time in API-only mode.
 
 ## Solid Queue on a separate database
 
