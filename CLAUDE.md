@@ -56,3 +56,5 @@ Maintain `CHANGELOG.md` for user-visible changes — brief and simple: one line 
 - Anything that changes boot-time config (`base_controller_class`, api_only) must use the subprocess pattern in `test/boot_test.rb` + `test/support/probe.rb`. Never mutate `Flightdeck.config.base_controller_class` in-process — the loaded `ApplicationController` superclass is frozen for the suite and poisons everything after it.
 - `Rails.cache.clear` runs in `before_setup`; if a test needs post-action fresh counts, mutations already wrap in `Flightdeck::Cache.bypass`.
 - Zeitwerk: one constant per file under `app/models/flightdeck/`.
+
+End any turn that reports on long-running or delegated work with a short status: **Goal**, **Done**, **Next**, **Needs you** (or "nothing").
