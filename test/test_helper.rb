@@ -51,6 +51,26 @@ module Flightdeck
     def basic_auth_header(username, password)
       ActionController::HttpAuthentication::Basic.encode_credentials(username, password)
     end
+
+    # A hand-moved stand-in for KnownNames' monotonic clock.
+    class FakeClock
+      attr_reader :now
+
+      def initialize(now) = @now = now
+      def advance(seconds) = @now += seconds
+    end
+
+    # Pins KnownNames' clock (minitest 6 has no `stub`). Not nestable.
+    def with_known_names_clock
+      clock = FakeClock.new(Flightdeck::KnownNames.now)
+      names = Flightdeck::KnownNames.singleton_class
+      names.alias_method(:__real_now, :now)
+      names.define_method(:now) { clock.now }
+      yield clock
+    ensure
+      names.alias_method(:now, :__real_now)
+      names.remove_method(:__real_now)
+    end
   end
 end
 
@@ -64,6 +84,7 @@ class ActiveSupport::TestCase
     # Counts and series are cached for a few seconds. Without this, one test's
     # numbers would still be warm when the next one runs.
     Rails.cache.clear
+    Flightdeck::KnownNames.reset!
   end
 end
 

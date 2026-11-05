@@ -6,6 +6,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- Job class search and the queue filter now match any part of the name, ignoring case (previously class search matched only from the start, case-sensitively, and the queue filter needed the exact name).
+
 ## [1.2.0] - 2026-09-04
 
 ### Added

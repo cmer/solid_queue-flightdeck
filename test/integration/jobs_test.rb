@@ -56,11 +56,11 @@ class Flightdeck::JobsTest < FlightdeckIntegrationTest
     assert_select ".fd-chip", text: /clear filters/
   end
 
-  test "search narrows the list by job class prefix" do
+  test "search narrows the list by a fragment of the job class" do
     match = create_ready_job(class_name: "Billing::ChargeJob")
     create_ready_job(class_name: "WebhookJob")
 
-    get_fd "/flightdeck/jobs?state=ready&q=Billing"
+    get_fd "/flightdeck/jobs?state=ready&q=charge"
 
     assert_equal [ match.id ], job_ids_in_response
   end

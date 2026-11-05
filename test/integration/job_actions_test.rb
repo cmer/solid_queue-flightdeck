@@ -120,6 +120,35 @@ class Flightdeck::JobActionsTest < FlightdeckIntegrationTest
     assert in_table?(SolidQueue::FailedExecution, other), "a job outside the filter must not be touched"
   end
 
+  # Pinned clock: a slow run mustn't outlast the TTL and pass without `fresh`.
+  test "applying to all matching sees job classes newer than the search memo" do
+    create_failed_job(class_name: "Screenshots::OldJob")
+
+    with_known_names_clock do
+      get_fd "/flightdeck/jobs?state=failed&q=screenshots" # warms the names memo
+      newcomer = create_failed_job(class_name: "Screenshots::NewJob")
+
+      post_fd "/flightdeck/jobs/retry", params: { scope: "all", state: "failed", q: "screenshots" }
+
+      assert in_table?(SolidQueue::ReadyExecution, newcomer), "a job whose class is newer than the memo was skipped"
+      assert_equal 0, SolidQueue::FailedExecution.count
+    end
+  end
+
+  test "applying to all matching sees queues newer than the search memo" do
+    create_failed_job(queue_name: "within_5_minutes")
+
+    with_known_names_clock do
+      get_fd "/flightdeck/jobs?state=failed&queue_name=within" # warms the names memo
+      newcomer = create_failed_job(queue_name: "within_1_minute")
+
+      post_fd "/flightdeck/jobs/discard", params: { scope: "all", state: "failed", queue_name: "within" }
+
+      refute SolidQueue::Job.exists?(newcomer.id), "a job whose queue is newer than the memo was skipped"
+      assert_equal 0, SolidQueue::FailedExecution.count
+    end
+  end
+
   test "applying to all matching stops at the configured limit and reports the remainder" do
     Flightdeck.config.bulk_action_limit = 2
     5.times { create_failed_job }
