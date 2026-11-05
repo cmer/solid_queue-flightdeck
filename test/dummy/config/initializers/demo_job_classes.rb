@@ -30,3 +30,5 @@ Rails.application.config.to_prepare do
     end)
   end
 end
+
+Flightdeck.config.codeowners_path = ".github/CODEOWNERS" if Rails.env.development?

@@ -67,6 +67,52 @@ class Flightdeck::JobsQueryTest < ActiveSupport::TestCase
     assert_empty Flightdeck::JobsQuery.new(state: :ready, q: "_lphaJob").rows
   end
 
+  test "failed_within keeps jobs that failed inside the window" do
+    recent = create_failed_job(failed_at: 30.minutes.ago)
+    create_failed_job(failed_at: 2.hours.ago)
+
+    query = Flightdeck::JobsQuery.new(state: :failed, failed_within: "1h")
+
+    assert_equal [ recent.id ], query.rows.map(&:id)
+    assert_equal 1, query.count
+    assert query.filters?
+  end
+
+  test "failed_within composes with the class filter" do
+    match = create_failed_job(class_name: "AlphaJob", failed_at: 30.minutes.ago)
+    create_failed_job(class_name: "BetaJob", failed_at: 30.minutes.ago)
+
+    query = Flightdeck::JobsQuery.new(state: :failed, class_name: "AlphaJob", failed_within: "1h")
+
+    assert_equal [ match.id ], query.rows.map(&:id)
+    assert_equal 1, query.count
+  end
+
+  test "failed_within empties every tab but failed and all" do
+    recent = create_failed_job(failed_at: 30.minutes.ago)
+    create_failed_job(failed_at: 2.hours.ago)
+    create_ready_job
+    create_finished_job
+
+    counts = Flightdeck::JobsQuery.state_counts(failed_within: "1h").transform_values { |tab| tab[:count] }
+
+    assert_equal({ all: 1, ready: 0, scheduled: 0, in_progress: 0, blocked: 0, finished: 0, failed: 1 }, counts)
+    assert_equal [ recent.id ], ids_for_within(:all)
+  end
+
+  test "failed_within ignores a window it does not know" do
+    create_failed_job(failed_at: 30.days.ago)
+
+    assert_equal 1, Flightdeck::JobsQuery.new(state: :failed, failed_within: "99y").count
+  end
+
+  test "counts for different windows are not shared in the cache" do
+    create_failed_job(failed_at: 2.hours.ago)
+
+    assert_equal 0, Flightdeck::JobsQuery.new(state: :failed, failed_within: "1h").count
+    assert_equal 1, Flightdeck::JobsQuery.new(state: :failed, failed_within: "3h").count
+  end
+
   test "keyset pagination walks pages without overlap or gaps" do
     jobs = 7.times.map { create_ready_job }
     expected = jobs.map(&:id).sort.reverse
@@ -175,6 +221,10 @@ class Flightdeck::JobsQueryTest < ActiveSupport::TestCase
   private
     def ids_for(state)
       Flightdeck::JobsQuery.new(state: state).rows.map(&:id)
+    end
+
+    def ids_for_within(state)
+      Flightdeck::JobsQuery.new(state: state, failed_within: "1h").rows.map(&:id)
     end
 
     def capture_sql

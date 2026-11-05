@@ -6,6 +6,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- An Owners page mapping failed jobs to their CODEOWNERS teams, with search, turned on with `config.codeowners_path`. Its class names and counts open the Failed list, filtered by class and time window.
+
 ## [1.2.0] - 2026-09-04
 
 ### Added

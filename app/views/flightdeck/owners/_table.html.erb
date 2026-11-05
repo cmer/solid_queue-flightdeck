@@ -1,0 +1,59 @@
+<% rows = failures.rows %>
+<%# The owner and search filters here aren't the jobs list's, so totals link out only when unfiltered. %>
+<% windows = Flightdeck::OwnerFailures::WINDOWS.keys %>
+
+<div class="fd-filterbar">
+  <%= link_to "All", owners_path(q: failures.q), class: "fd-chip#{" off" if failures.owner}" %>
+  <% failures.owner_totals.each do |owner, count| %>
+    <%= link_to owners_path(owner: owner, q: failures.q), class: "fd-chip#{" off" unless failures.owner == owner}" do %>
+      <%= owner %> <u><%= number_with_delimiter(count) %></u>
+    <% end %>
+  <% end %>
+</div>
+
+<div class="fd-card">
+  <div class="fd-card-hd">
+    <h3>Failed jobs by class</h3>
+    <span class="sub">Still failed; retried and discarded jobs drop out</span>
+  </div>
+  <div class="fd-scroll-x">
+    <table class="fd-data">
+      <thead>
+        <tr>
+          <th>Class</th>
+          <th class="num">Failed</th>
+          <% windows.each do |window| %>
+            <th class="num"><%= window %></th>
+          <% end %>
+          <th>Owners</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if rows.empty? %>
+          <tr><td colspan="<%= windows.size + 3 %>"><div class="fd-empty">No failed jobs<%= " match this search" if failures.q %>.</div></td></tr>
+        <% else %>
+          <% rows.each do |row| %>
+            <tr>
+              <td class="cls"><%= link_to row.class_name, jobs_path(state: :failed, class_name: row.class_name) %></td>
+              <td class="num">
+                <%= fd_failed_count_link(row.total, class_name: row.class_name) %>
+              </td>
+              <% windows.zip(row.windows).each do |window, count| %>
+                <td class="num dim"><%= fd_failed_count_link(count, class_name: row.class_name, failed_within: window) %></td>
+              <% end %>
+              <td class="dim"><%= row.owners.join(", ").presence || "—" %></td>
+            </tr>
+          <% end %>
+          <tr>
+            <td class="cls">Total</td>
+            <td class="num"><%= failures.filtered? ? number_with_delimiter(failures.total) : fd_failed_count_link(failures.total) %></td>
+            <% windows.zip(failures.window_totals).each do |window, count| %>
+              <td class="num dim"><%= failures.filtered? ? number_with_delimiter(count) : fd_failed_count_link(count, failed_within: window) %></td>
+            <% end %>
+            <td></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

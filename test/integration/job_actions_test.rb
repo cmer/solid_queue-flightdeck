@@ -110,6 +110,26 @@ class Flightdeck::JobActionsTest < FlightdeckIntegrationTest
 
   # --- all matching ---------------------------------------------------------
 
+  test "retrying all matching leaves jobs outside the failed_within window alone" do
+    recent = create_failed_job(failed_at: 30.minutes.ago)
+    older = create_failed_job(failed_at: 2.hours.ago)
+
+    post_fd "/flightdeck/jobs/retry", params: { scope: "all", state: "failed", failed_within: "1h" }
+
+    assert in_table?(SolidQueue::ReadyExecution, recent), "the job in the window should be retried"
+    assert in_table?(SolidQueue::FailedExecution, older), "the older job should still be failed"
+  end
+
+  test "discarding all matching leaves jobs outside the failed_within window alone" do
+    recent = create_failed_job(failed_at: 30.minutes.ago)
+    older = create_failed_job(failed_at: 2.hours.ago)
+
+    post_fd "/flightdeck/jobs/discard", params: { scope: "all", state: "failed", failed_within: "1h" }
+
+    assert_nil SolidQueue::Job.find_by(id: recent.id)
+    assert in_table?(SolidQueue::FailedExecution, older), "the older job should still be failed"
+  end
+
   test "applying to all matching respects the filter that was on screen" do
     matching = 2.times.map { create_failed_job(class_name: "AlphaJob") }
     other = create_failed_job(class_name: "BetaJob")

@@ -134,6 +134,7 @@ the engine answers 401 behind your constraint.
 | `display_timezone` | `"UTC"` | Timezone for displayed timestamps. Queries stay in UTC. |
 | `backtrace_lines` | `50` | Backtrace frames shown on job detail. |
 | `ui_font` | `"public-sans"` | Default interface typeface. Each user can pick another one in the sidebar. |
+| `codeowners_path` | `nil` | CODEOWNERS file, relative to `Rails.root` or absolute. Turns on the Owners page. |
 
 ## Interface font
 
@@ -156,6 +157,29 @@ requests to third parties. They are served as ordinary digest-named assets
 rather than inlined, so a browser only downloads the one face it is rendering
 in. The monospace face (IBM Plex Mono) is fixed: the job tables depend on its
 tabular figures.
+
+## Job owners
+
+The Owners page lists failed jobs per class, with the owners of each class and
+counts for the last 1h, 3h, 24h, 3d and 7d. It reads your CODEOWNERS file:
+
+```ruby
+Flightdeck.configure do |config|
+  config.codeowners_path = ".github/CODEOWNERS"
+end
+```
+
+The file has to be present wherever the dashboard runs, so check that your
+deploy doesn't leave `.github` out. Each class is matched by the file that
+defines it, which means loading the class. A class that can't be loaded, or is
+defined outside the repo (`ActionMailer::MailDeliveryJob`), shows as Unowned.
+
+Filter by owner with the chips, and search by any part of the class name. Class
+names and counts open the Failed list, filtered to that class and time window;
+"Retry all matching" and "Discard all matching" there stay inside that window.
+
+Counts cover jobs that are still failed: Solid Queue deletes a failed execution
+when its job is retried or discarded, so this isn't a history of failures.
 
 ## Chart history and job retention
 

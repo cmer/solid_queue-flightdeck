@@ -12,7 +12,8 @@ module Flightdeck
                   :bulk_action_limit,
                   :chart_cache_ttl,
                   :display_timezone,
-                  :backtrace_lines
+                  :backtrace_lines,
+                  :codeowners_path
 
     attr_reader :ui_font
 
@@ -28,6 +29,7 @@ module Flightdeck
       @chart_cache_ttl = 30.seconds
       @display_timezone = "UTC"
       @backtrace_lines = 50
+      @codeowners_path = nil
       @ui_font = UiFonts::DEFAULT
     end
 
