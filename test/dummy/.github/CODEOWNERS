@@ -1,0 +1,24 @@
+# Used by the Owners tests and by bin/demo.
+/app/jobs/billing/ @acme/billing
+/app/jobs/billing/sync_* @acme/billing @acme/finance
+
+/app/jobs/finance/ @acme/finance
+/app/jobs/finance/export_report_job.rb @acme/finance @acme/analytics
+
+/app/jobs/sales/ @acme/sales
+/app/jobs/sales/export_report_job.rb @acme/sales @acme/analytics
+/app/jobs/sales/send_quote_email_job.rb @acme/sales @acme/growth
+
+/app/jobs/notifications/ @acme/growth @acme/mobile
+/app/jobs/notifications/send_email_job.rb @acme/growth
+
+/app/jobs/mobile/ @acme/mobile @acme/platform
+
+/app/jobs/platform/ @acme/platform
+/app/jobs/platform/export_* @acme/platform @acme/security
+
+/app/jobs/security/ @acme/security @alice
+
+# The last match wins, so the import job is deliberately unowned.
+/app/jobs/legacy/ @acme/platform
+/app/jobs/legacy/import_csv_job.rb

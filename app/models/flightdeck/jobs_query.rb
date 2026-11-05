@@ -23,16 +23,26 @@ module Flightdeck
     ARGUMENTS_PREVIEW_BYTES = 800
     ERROR_PREVIEW_BYTES = 1_000
 
+    # Lengths of the "failed within" filter, also the Owners page columns.
+    FAILED_WINDOWS = {
+      "1h" => 1.hour,
+      "3h" => 3.hours,
+      "24h" => 24.hours,
+      "3d" => 3.days,
+      "7d" => 7.days
+    }.freeze
+
     class InvalidState < ArgumentError; end
 
-    attr_reader :state, :class_name, :queue_name, :q, :before_id, :limit, :count_cap
+    attr_reader :state, :class_name, :queue_name, :q, :failed_within, :before_id, :limit, :count_cap
 
-    def initialize(state: :all, class_name: nil, queue_name: nil, q: nil, before_id: nil,
-                   limit: nil, count_cap: nil)
+    def initialize(state: :all, class_name: nil, queue_name: nil, q: nil, failed_within: nil,
+                   before_id: nil, limit: nil, count_cap: nil)
       @state = normalize_state(state)
       @class_name = class_name.presence
       @queue_name = queue_name.presence
       @q = q.presence
+      @failed_within = failed_within.presence_in(FAILED_WINDOWS.keys)
       @before_id = before_id.presence && Integer(before_id, exception: false)
       @limit = (limit || Flightdeck.config.per_page).to_i.clamp(1, 200)
       @count_cap = (count_cap || Flightdeck.config.count_cap).to_i
@@ -66,7 +76,7 @@ module Flightdeck
     def count_capped? = count >= count_cap
 
     def filters?
-      class_name.present? || queue_name.present? || q.present?
+      class_name.present? || queue_name.present? || q.present? || failed_within.present?
     end
 
     # The filtered relation with no ordering, limit or cursor — what bulk
@@ -97,7 +107,7 @@ module Flightdeck
       # Only the filters change what a count means — the cursor and page size do
       # not, so they are deliberately absent from the key.
       def cache_filters
-        { class_name: class_name, queue_name: queue_name, q: q }
+        { class_name: class_name, queue_name: queue_name, q: q, failed_within: failed_within }
       end
 
       def normalize_state(value)
@@ -206,8 +216,21 @@ module Flightdeck
         relation = relation.where(jobs_table[:class_name].eq(class_name)) if class_name
         relation = relation.where(queue_table[:queue_name].eq(queue_name)) if queue_name
         relation = relation.where(jobs_table[:class_name].matches("#{escape_like(q)}%", nil, true)) if q
+        relation = apply_failed_within(relation) if failed_within
 
         relation
+      end
+
+      # Only failed jobs can have failed recently, so every other state is empty
+      # and the tabs add up.
+      def apply_failed_within(relation)
+        recent = SolidQueue::FailedExecution.where(created_at: (Time.current - FAILED_WINDOWS.fetch(failed_within))..)
+
+        case state
+        when :failed then relation.merge(recent)
+        when :all then relation.where(id: recent.select(:job_id))
+        else relation.none
+        end
       end
 
       def join_jobs?

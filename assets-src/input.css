@@ -770,6 +770,8 @@ input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px;
   border: 1px solid var(--accent-ink); background: var(--accent-wash); color: var(--accent-ink);
   font: 500 11.5px/1 var(--font-mono); text-decoration: none;
 }
+.fd-chip.off { border-color: var(--line); background: transparent; color: var(--ink-2); }
+.fd-chip.off:hover { color: var(--ink); }
 .fd-chip u { text-decoration: none; opacity: .65; font-weight: 400; }
 .fd-chip:hover u { opacity: 1; }
 

@@ -1,11 +1,16 @@
 <%= form_with url: jobs_path, method: :get, class: "fd-filterbar", data: { turbo_action: "advance" } do |form| %>
   <%= form.hidden_field :state, value: params[:state], id: "fd-filter-state" %>
+  <%= form.hidden_field :class_name, value: query.class_name, id: nil if query.class_name %>
+  <%= form.hidden_field :failed_within, value: query.failed_within, id: nil if query.failed_within %>
   <%= form.search_field :q, value: params[:q],
         placeholder: "Search job class…",
         "aria-label": "Search jobs by class name" %>
   <%= form.text_field :queue_name, value: params[:queue_name],
         placeholder: "Queue", "aria-label": "Filter by queue" %>
   <%= form.submit "Filter", class: "fd-btn" %>
+
+  <% if query.class_name %><span class="fd-chip off"><%= query.class_name %></span><% end %>
+  <% if query.failed_within %><span class="fd-chip off">failed in last <%= query.failed_within %></span><% end %>
 
   <% if query.filters? %>
     <%= link_to jobs_path(state: params[:state].presence), class: "fd-chip" do %>

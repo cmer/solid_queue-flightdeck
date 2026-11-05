@@ -1,0 +1,32 @@
+<% content_for :page_title, "Owners" %>
+
+<% if @failures %>
+  <%= form_with url: owners_path, method: :get, class: "fd-filterbar", data: { turbo_action: "advance" } do |form| %>
+    <%= form.hidden_field :owner, value: @failures.owner, id: nil if @failures.owner %>
+    <%= form.search_field :q, value: @failures.q, id: nil,
+          placeholder: "Search job class…", "aria-label": "Search by job class" %>
+    <%= form.submit "Filter", name: nil, class: "fd-btn" %>
+
+    <% if @failures.q %>
+      <%= link_to owners_path(owner: @failures.owner), class: "fd-chip" do %>
+        clear search <u>&#10005;</u>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= fd_refresh_frame "fd-owners", url: owners_path(owner: @failures&.owner, q: @failures&.q), interval: fd_chart_poll_ms do %>
+  <% if @failures %>
+    <%= render "flightdeck/owners/table", failures: @failures %>
+  <% else %>
+    <div class="fd-card">
+      <div class="fd-empty">
+        <% if Flightdeck.config.codeowners_path.present? %>
+          No CODEOWNERS file at <code><%= Flightdeck.config.codeowners_path %></code>.
+        <% else %>
+          Set <code>config.codeowners_path</code> to map job classes to their owners.
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+<% end %>

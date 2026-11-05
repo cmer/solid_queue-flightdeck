@@ -205,4 +205,33 @@ class Flightdeck::JobsTest < FlightdeckIntegrationTest
 
     assert_redirected_to "/flightdeck/jobs"
   end
+
+  test "the failed list shows the class and window it arrived with, and Filter keeps them" do
+    create_failed_job(class_name: "AlphaJob", failed_at: 30.minutes.ago)
+
+    get_fd "/flightdeck/jobs?state=failed&class_name=AlphaJob&failed_within=1h"
+
+    assert_select ".fd-chip", text: "AlphaJob"
+    assert_select ".fd-chip", text: "failed in last 1h"
+    assert_select "form.fd-filterbar input[type=hidden][name=class_name][value=AlphaJob]"
+    assert_select "form.fd-filterbar input[type=hidden][name=failed_within][value='1h']"
+  end
+
+  test "bulk buttons and tabs carry the window" do
+    create_failed_job(failed_at: 30.minutes.ago)
+
+    get_fd "/flightdeck/jobs?state=failed&failed_within=1h"
+
+    assert_select "form[action*=?]", "failed_within=1h", minimum: 2
+    assert_select ".fd-statetabs a[href*=?]", "failed_within=1h", count: Flightdeck::JobsQuery::STATES.size
+  end
+
+  test "an unknown window is dropped, not carried along" do
+    create_failed_job(failed_at: 30.days.ago)
+
+    get_fd "/flightdeck/jobs?state=failed&failed_within=99y"
+
+    assert_response :success
+    assert_select "form[action*=?]", "failed_within", count: 0
+  end
 end

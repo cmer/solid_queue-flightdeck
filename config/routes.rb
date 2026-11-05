@@ -24,6 +24,8 @@ Flightdeck::Engine.routes.draw do
     end
   end
 
+  resources :owners, only: :index
+
   resources :processes, only: :index do
     member { post :prune }
   end

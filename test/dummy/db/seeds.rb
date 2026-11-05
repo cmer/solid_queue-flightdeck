@@ -23,6 +23,19 @@ class FlightdeckSeeder
     "low"      => %w[ImageVariantJob Reports::DailyDigestJob CleanupSessionsJob]
   }.freeze
 
+  # Named to overlap on the Owners page: `Sync`, `Export` and `Report` cut across
+  # teams, and test/dummy/.github/CODEOWNERS gives many of these two owners.
+  OWNED_FAILURES = %w[
+    Billing::SyncInvoicesJob Billing::RefundOrderJob
+    Finance::SyncLedgerJob Finance::ExportReportJob
+    Sales::SyncLeadsJob Sales::ExportReportJob Sales::SendQuoteEmailJob
+    Notifications::PushJob Notifications::SendEmailJob Notifications::SendSmsJob
+    Mobile::SyncDevicesJob
+    Platform::SyncUsersJob Platform::ExportAuditLogJob
+    Security::RotateKeysJob Security::ScanUploadsJob
+    Legacy::ImportCsvJob Legacy::ExportCsvJob
+  ].freeze
+
   RECURRING_TASKS = {
     "daily_digest"           => [ "0 23 * * *", "Reports::DailyDigestJob" ],
     "sync_inventory"         => [ "*/5 * * * *", "SyncInventoryJob" ],
@@ -44,6 +57,7 @@ class FlightdeckSeeder
 
     seed_fleet
     seed_history
+    seed_owned_failures
     seed_backlog
     seed_recurring
 
@@ -94,6 +108,23 @@ class FlightdeckSeeder
             class_name: sample_class(queue), queue_name: queue,
             exception_class: exception_class, message: message,
             created_at: enqueued, failed_at: enqueued + rand(2.0..90.0), executions: rand(1..5)
+          )
+        end
+      end
+    end
+
+    # One failure per Owners window, then a few at random, so every column of
+    # every class has a number to click.
+    def seed_owned_failures
+      OWNED_FAILURES.each do |class_name|
+        ages = [ 30.minutes, 2.hours, 12.hours, 2.days, 5.days ] + Array.new(rand(4)) { rand(1.hour..6.days) }
+
+        ages.each do |age|
+          exception_class, message = ERRORS.sample
+          create_failed_job(
+            class_name: class_name, queue_name: "default",
+            exception_class: exception_class, message: message,
+            created_at: age.ago - 60, failed_at: age.ago, executions: rand(1..5)
           )
         end
       end
