@@ -204,8 +204,11 @@ module Flightdeck
         relation = relation.joins(:job) if join_jobs?
 
         relation = relation.where(jobs_table[:class_name].eq(class_name)) if class_name
-        relation = relation.where(queue_table[:queue_name].eq(queue_name)) if queue_name
-        relation = relation.where(jobs_table[:class_name].matches("#{escape_like(q)}%", nil, true)) if q
+        # Fragments resolve to exact names (see KnownNames): an indexed IN list.
+        if queue_name
+          relation = relation.where(queue_table[:queue_name].in(KnownNames.matching_queues(queue_name)))
+        end
+        relation = relation.where(jobs_table[:class_name].in(KnownNames.matching_classes(q))) if q
 
         relation
       end
@@ -224,10 +227,6 @@ module Flightdeck
 
       def queue_table
         own_queue_column? ? model.arel_table : jobs_table
-      end
-
-      def escape_like(value)
-        ActiveRecord::Base.sanitize_sql_like(value.to_s)
       end
   end
 end

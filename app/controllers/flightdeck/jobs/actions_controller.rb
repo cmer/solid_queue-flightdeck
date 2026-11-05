@@ -14,12 +14,16 @@ module Flightdeck
       include Toasts
 
       def create
-        if params[:id].present?
-          act_on_single
-        elsif params[:scope] == "all"
-          act_on_all_matching
-        else
-          act_on_selected
+        # Fresh names, or "all matching" could skip a job with a brand-new class
+        # or queue.
+        KnownNames.fresh do
+          if params[:id].present?
+            act_on_single
+          elsif params[:scope] == "all"
+            act_on_all_matching
+          else
+            act_on_selected
+          end
         end
 
         respond_to do |format|

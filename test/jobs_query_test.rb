@@ -52,19 +52,65 @@ class Flightdeck::JobsQueryTest < ActiveSupport::TestCase
     assert_equal 1, query.count
   end
 
-  test "search is a prefix match on the job class" do
+  test "search is a case-insensitive substring match on the job class" do
     match = create_ready_job(class_name: "Billing::ChargeJob")
     create_ready_job(class_name: "WebhookJob")
 
     assert_equal [ match.id ], Flightdeck::JobsQuery.new(state: :ready, q: "Billing").rows.map(&:id)
-    assert_empty Flightdeck::JobsQuery.new(state: :ready, q: "ChargeJob").rows
+    assert_equal [ match.id ], Flightdeck::JobsQuery.new(state: :ready, q: "chargejob").rows.map(&:id)
+    assert_empty Flightdeck::JobsQuery.new(state: :ready, q: "Refund").rows
   end
 
-  test "search escapes LIKE wildcards instead of treating them as a pattern" do
-    create_ready_job(class_name: "AlphaJob")
+  test "queue filter is a case-insensitive substring match" do
+    a = create_failed_job(queue_name: "within_5_minutes")
+    b = create_ready_job(queue_name: "within_1_minute")
+    create_ready_job(queue_name: "default")
+
+    assert_equal [ a.id ], Flightdeck::JobsQuery.new(state: :failed, queue_name: "5_MIN").rows.map(&:id)
+    assert_equal [ b.id ], Flightdeck::JobsQuery.new(state: :ready, queue_name: "within").rows.map(&:id)
+  end
+
+  test "search treats wildcard characters literally" do
+    create_ready_job(class_name: "AlphaJob", queue_name: "low")
+    create_ready_job(class_name: "Under_scoreJob", queue_name: "a_b")
 
     assert_empty Flightdeck::JobsQuery.new(state: :ready, q: "%").rows
     assert_empty Flightdeck::JobsQuery.new(state: :ready, q: "_lphaJob").rows
+    assert_equal 1, Flightdeck::JobsQuery.new(state: :ready, q: "r_s").count
+    assert_empty Flightdeck::JobsQuery.new(state: :ready, queue_name: "l_w").rows
+    assert_empty Flightdeck::JobsQuery.new(state: :ready, queue_name: "\\").rows
+  end
+
+  test "search folds case beyond ASCII" do
+    job = create_ready_job(class_name: "ÉmailJob", queue_name: "Ünicode")
+
+    assert_equal [ job.id ], Flightdeck::JobsQuery.new(state: :ready, q: "émail").rows.map(&:id)
+    assert_equal [ job.id ], Flightdeck::JobsQuery.new(state: :ready, queue_name: "ünI").rows.map(&:id)
+  end
+
+  test "fragments resolve to an exact IN list, never a LIKE scan" do
+    create_ready_job(class_name: "Billing::ChargeJob", queue_name: "within_5_minutes")
+    create_ready_job(class_name: "WebhookJob", queue_name: "default")
+
+    sql = capture_sql do
+      query = Flightdeck::JobsQuery.new(state: :ready, q: "charge", queue_name: "5_min")
+      query.rows
+      query.count
+    end
+
+    filtered = sql.grep(/solid_queue_ready_executions/)
+    assert filtered.any?
+    filtered.each { |statement| refute_match(/\bLIKE\b/i, statement) }
+    assert filtered.any? { |statement| statement.include?("Billing::ChargeJob") }
+  end
+
+  test "a fragment matching no known name returns nothing in every state" do
+    create_failed_job(class_name: "AlphaJob", queue_name: "critical")
+
+    Flightdeck::JobsQuery::STATES.each do |state|
+      assert_equal 0, Flightdeck::JobsQuery.new(state: state, q: "Nope").count, state
+      assert_equal 0, Flightdeck::JobsQuery.new(state: state, queue_name: "nope").count, state
+    end
   end
 
   test "keyset pagination walks pages without overlap or gaps" do
